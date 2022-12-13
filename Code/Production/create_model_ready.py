@@ -1,6 +1,25 @@
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
+import pymysql
+
+
+def create_mysql_conn(uid, pwd, host, db):
+    """
+    Create a connection to a MySQL database using sqlalchemy.
+
+    Args:
+        uid (str): The username to use for the connection.
+        pwd (str): The password to use for the connection.
+        host (str): The hostname or IP address of the MySQL server.
+        db (str): The name of the database to connect to.
+
+    Returns:
+        An sqlalchemy engine object that can be used to perform operations on the database.
+    """
+    engine = sqlalchemy.create_engine('mysql+pymysql://{}:{}@{}/{}'.format(uid, pwd, host, db))
+    return engine
+
 headers = {
 	'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
