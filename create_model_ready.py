@@ -47,17 +47,19 @@ def get_weather(city):
         f'https://www.google.com/search?q={city}&oq={city}&aqs=chrome.0.35i39l2j0l4j46j69i60.6128j1j7&sourceid=chrome&ie=UTF-8',
         headers=headers)
     soup = BeautifulSoup(res.text, 'html.parser') 
-    location = soup.select('#wob_loc')[0].getText()
-    time = soup.select('#wob_dts')[0].getText()
-    weather = soup.select('#wob_dc')[0].getText()
-    temp = soup.select('#wob_tm')[0].getText()
-    wind = soup.select('#wob_ws')[0].getText().strip()
-    humidity = soup.select('#wob_hm')[0].getText().strip()
-    df = pd.DataFrame({'Location': location, 'Time': time, 'Weather': weather, 'Temperature': temp, 'Wind': wind,
-                       'Humidity': humidity}, index=[0])
+    Location = soup.select('#wob_loc')[0].getText()
+    TIME = soup.select('#wob_dts')[0].getText()
+    WEATHER_PARK_CD = soup.select('#wob_dc')[0].getText()
+    TEMP_PARK_CT = soup.select('#wob_tm')[0].getText()
+    WIND_SPEED_PARK_CT = soup.select('#wob_ws')[0].getText().strip()
+    HUMIDITY_PARK_CT = soup.select('#wob_hm')[0].getText().strip()
+    df = pd.DataFrame({'Location': Location, 'TIME': TIME, 'WEATHER_PARK_CD': WEATHER_PARK_CD, 'TEMP_PARK_CT': TEMP_PARK_CT, 'WIND_SPEED_PARK_CT': WIND_SPEED_PARK_CT,
+                       'HUMIDITY_PARK_CT': HUMIDITY_PARK_CT}, index=[0])
+
+    df["WIND_SPEED_PARK_CT"] = df["WIND_SPEED_PARK_CT"].str.replace("mph", "")
+    df["WIND_SPEED_PARK_CT"] = pd.to_numeric(df["WIND_SPEED_PARK_CT"])
+
+    df["HUMIDITY_PARK_CT"] = df["HUMIDITY_PARK_CT"].str.replace("%", "")
     return df
 
 df=pd.concat(map(get_weather, cities))
-
-
-
