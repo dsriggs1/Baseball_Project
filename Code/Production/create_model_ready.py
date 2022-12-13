@@ -2,9 +2,9 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import pymysql
+import sqlalchemy
 
-
-def create_mysql_conn(uid, pwd, host, db):
+def db_connect(uid, pwd, host, db):
     """
     Create a connection to a MySQL database using sqlalchemy.
 
@@ -19,6 +19,17 @@ def create_mysql_conn(uid, pwd, host, db):
     """
     engine = sqlalchemy.create_engine('mysql+pymysql://{}:{}@{}/{}'.format(uid, pwd, host, db))
     return engine
+
+def db_insert(df, table_name, engine):
+    """
+    Insert a dataframe into a MySQL database.
+
+    Args:
+        df (pd.DataFrame): The dataframe to insert into the database.
+        table_name (str): The name of the table to insert the data into.
+        engine (sqlalchemy.engine.base.Engine): The sqlalchemy engine object to use to connect to the database.
+    """
+    df.to_sql(table_name, engine, if_exists='append', index=False)  # if_exists='append' means that if the table already exists, the data will be appended to it
 
 headers = {
 	'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
