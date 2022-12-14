@@ -29,6 +29,21 @@ class Database:
         df.to_sql(table_name, engine, if_exists='append',
                   index=False)  # if_exists='append' means that if the table already exists, the data will be appended to it
 
+    def db_delete_rows(self, table_name, engine, where_clause):
+        """
+            Delete rows from the specified table that match the given WHERE clause.
+
+            Args:
+                table_name (str): The name of the table to delete rows from.
+                engine (Engine): The SQLAlchemy engine to use for connecting to the database.
+                where_clause (str): The WHERE clause to use when deleting rows.
+
+            Returns:
+                None
+            """
+        with engine.connect() as con:
+            con.execute(f'DELETE FROM {table_name} WHERE {where_clause}')
+
 
 class Weather(Database):
     def __init__(self, uid, pwd, host, db):
