@@ -92,6 +92,17 @@ class Weather(Database):
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
+        """
+            Scrape the lineup information for a given date from the baseballpress.com website.
+
+            Parameters:
+            url (str): The url of the webpage to be scraped.
+            date (str): The date of the game for which the lineup is being scraped.
+
+            Returns:
+            tuple: A tuple containing two pandas dataframes, one for the batters and one for the pitchers.
+            """
+
         res = requests.get(url, headers=headers)
 
         soup = BeautifulSoup(res.text, 'html.parser')
