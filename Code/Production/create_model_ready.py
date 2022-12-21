@@ -87,3 +87,61 @@ class Weather(Database):
 
         df["HUMIDITY_PARK_CT"] = df["HUMIDITY_PARK_CT"].str.replace("%", "")
         return df
+
+    def get_lineups(self, url, date):
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+
+        res = requests.get(url, headers=headers)
+
+        soup = BeautifulSoup(res.text, 'html.parser')
+
+        player_long = soup.find_all('div', attrs={'class': 'player'})
+        players = soup.find_all(class_='player-link')
+        TEAMS = soup.select("a.mlb-team-logo.bc")
+
+        player_long = list(map(lambda player: player.text, player_long))
+        players = list(map(lambda player: player['data-bref'], players))
+        players = pd.DataFrame(data={'players': players, 'player_long': player_long})
+        batters = players[players['player_long'].str.contains(r'^\d\. ')]
+        pitchers = players[~players['player_long'].str.contains(r'\d\. ')]
+        pitchers['PIT_HAND_CD'] = pitchers['player_long'].str.extract(r'\b(R|L|S)\b')
+
+        TEAMS = list(map(lambda TEAM: TEAM.text, TEAMS))
+        TEAMS = list(map(lambda TEAM: TEAM.strip(), TEAMS))
+
+        AWAY_HOME = ["AWAY_TEAM_ID", "HOME_TEAM_ID"]
+
+        batters['TEAM'] = [TEAM for TEAM in TEAMS for i in range(9)]
+        batters['BAT_LINEUP_ID'] = batters['player_long'].str.extract(r'(\d)')
+        batters['POSITION'] = batters['player_long'].str.extract(r'\b(CF|RF|LF|1B|2B|3B|SS|C|DH)\b')
+        batters['BAT_HAND_CD'] = batters['player_long'].str.extract(r'\b(R|L|S)\b')
+
+        self.position_mapping = {
+            'P': 1,
+            'C': 2,
+            '1B': 3,
+            '2B': 4,
+            '3B': 5,
+            'SS': 6,
+            'LF': 7,
+            'CF': 8,
+            'RF': 9,
+            'DH': 10,
+            0: 999
+        }
+
+        batters.fillna(0, inplace=True)
+        # Create a new column called 'BAT_FLD_CD' that maps the positions to the corresponding numbers
+        batters['BAT_FLD_CD'] = [position_mapping[POSITION] for POSITION in batters['POSITION']]
+
+        AWAY_HOME = [item for sublist in [AWAY_HOME] * (len(batters) // len(AWAY_HOME) + 1) for item in sublist]
+        batters['AWAY_HOME_ID'] = [AWAY_HOME[i // 9] for i in range(len(batters))]
+        AWAY_HOME = ["AWAY_TEAM_ID", "HOME_TEAM_ID"]
+        AWAY_HOME = [item for sublist in [AWAY_HOME] * (len(pitchers) // len(AWAY_HOME) + 1) for item in sublist]
+        pitchers['AWAY_HOME_ID'] = [AWAY_HOME[i // 1] for i in range(len(pitchers))]
+
+        batters.rename(columns={'players': 'BAT_ID'}, inplace=True)
+        pitchers.rename(columns={'players': 'PIT_ID'}, inplace=True)
+
+        return batters, pitchers
