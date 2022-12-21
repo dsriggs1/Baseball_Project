@@ -102,6 +102,8 @@ class Weather(Database):
             Returns:
             tuple: A tuple containing two pandas dataframes, one for the batters and one for the pitchers.
             """
+        if not isinstance(url, str):
+            raise TypeError("'Url' must be a string")
 
         res = requests.get(url, headers=headers)
 
