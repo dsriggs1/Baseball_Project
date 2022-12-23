@@ -1,7 +1,11 @@
+import datetime as datetime
+
 import pandas as pd
 import requests
 import sqlalchemy
 from bs4 import BeautifulSoup
+from pybaseball import playerid_reverse_lookup
+from pybaseball import statcast
 
 
 class Database:
@@ -204,3 +208,77 @@ class WebScrape(Database):
         pitchers.drop(columns=['player_long'], axis=1, inplace=True)
 
         return batters, pitchers
+
+    def get_stats(self, date):
+        """
+        Use the pybaseball package to get the stats for a given date.
+        :param date:
+        :return stats:
+        """
+        
+        if not isinstance(date, str):
+            raise TypeError("'date' must be a string in the format 'YYYYMMDD'")
+
+        date_obj = datetime.strptime(date, '%Y-%m-%d')
+        yyyymmdd = date_obj.strftime('%Y%m%d')
+
+        stats = statcast(date, date)
+
+        stats.columns = stats.columns.str.upper()
+
+        mapping = {'STAND': 'BAT_HAND_CD',
+                   'P_THROWS': 'PIT_HAND_CD',
+                   'AWAY_TEAM': 'AWAY_TEAM_ID',
+                   'HOME_TEAM': 'HOME_TEAM_ID',
+                   'GAME_YEAR': 'YEAR_ID'}
+
+        stats = stats.rename(columns=mapping)
+
+        mlb_teams = {
+            "LAA": "ANA",
+            "HOU": "HOU",
+            "OAK": "OAK",
+            "TOR": "TOR",
+            "ATL": "ATL",
+            "MIL": "MIL",
+            "STL": "SLN",
+            "CHC": "CHI",
+            "AZ": "ARI",
+            "LAD": "LAN",
+            "SF": "SFN",
+            "CLE": "CLE",
+            "SEA": "SEA",
+            "MIA": "MIA",
+            "NYM": "NYN",
+            "WSH": "WAS",
+            "BAL": "BAL",
+            "SD": "SDN",
+            "PHI": "PHI",
+            "PIT": "PIT",
+            "TEX": "TEX",
+            "TB": "TBA",
+            "BOS": "BOS",
+            "CIN": "CIN",
+            "COL": "COL",
+            "KC": "KCA",
+            "DET": "DET",
+            "MIN": "MIN",
+            "CWS": "CHA",
+            "NYY": "NYA",
+        }
+
+        stats['HOME_TEAM_ID'] = [mlb_teams[team] for team in stats['HOME_TEAM_ID']]
+        stats['AWAY_TEAM_ID'] = [mlb_teams[team] for team in stats['AWAY_TEAM_ID']]
+
+        stats['GAME_ID'] = stats['HOME_TEAM_ID'] + yyyymmdd
+
+        pitcher_ids = list(stats['PITCHER'].unique())
+        batter_ids = list(stats['BATTER'].unique())
+
+        pitchers = playerid_reverse_lookup(pitcher_ids, key_type='mlbam')
+        batters = playerid_reverse_lookup(batter_ids, key_type='mlbam')
+
+        stats = pd.merge(stats, pitchers, left_on='PITCHER', right_on='key_mlbam', how='left')
+        stats = pd.merge(stats, batters, left_on='BATTER', right_on='key_mlbam', how='left')
+
+        return stats
