@@ -10,6 +10,7 @@ install.packages("partykit")
 install.packages("rJava", type = 'source')
 install.packages("dplyr")
 install.packages("data.table")
+library(tidyr)
 library(partykit)
 library(RWeka)
 library(rpart.plot)
@@ -52,12 +53,12 @@ events<-sqlQuery(channel, paste("select seq_events, YEAR_ID, GAME_ID, bat_id, PA
                             PR_Run1_fl, PR_Run2_fl, PR_Run3_fl, INN_CT, 
                             AWAY_SCORE_CT, HOME_SCORE_CT, HOME_TEAM_ID, BAT_HAND_CD, PIT_HAND_CD, PIT_ID 
                             from events 
-                            where year_id>='2016'"))
+                            where YEAR_ID='2016'"))
 
-weather<-sqlQuery(channel, paste("select year_id, GAME_ID, TEMP_PARK_CT, WIND_DIRECTION_PARK_CD, WIND_SPEED_PARK_CT, 
+weather<-sqlQuery(channel, paste("select YEAR_ID, GAME_ID, TEMP_PARK_CT, WIND_DIRECTION_PARK_CD, WIND_SPEED_PARK_CT,
                              PRECIP_PARK_CD, SKY_PARK_CD,WIN_PIT_ID
                             from games 
-                            where year_id>='2016'"))
+                            where YEAR_ID='2016'"))
 
 df<-merge(events,weather)
 
@@ -155,7 +156,7 @@ sb$STOLEN_BASE_POINTS<-3
 sb<-setNames(aggregate(sb$STOLEN_BASE_POINTS, by=list(sb$GAME_ID, sb$BASE_STL_ID), FUN=sum)
              , c("GAME_ID", "BASE_STL_ID", "STOLEN_BASE_POINTS"))
 
-proc.time() - ptm
+#proc.time() - ptm
 
 
 df$Game <- substr(df$GAME_ID,4,12)
@@ -182,14 +183,24 @@ df$gameubb<-ave(df$EVENT_CD==14, df$bat_id, df$GAME_ID, df$PIT_HAND_CD, FUN=cums
 df$gameballs<-ave(df$PA_BALL_CT, df$bat_id, df$GAME_ID, df$PIT_HAND_CD, FUN=cumsum)
 df$gameswingstrikes<-ave(df$PA_SWINGMISS_STRIKE_CT, df$bat_id, df$GAME_ID, df$PIT_HAND_CD, FUN=cumsum)
 
+#Adding first checkpoint
+sqlSave(channel, df, tablename=paste0("At_bat_Level_Stats_", "original"), rownames=FALSE, append=TRUE)
+
 #Aggregating from AtBat to Game level
 dfg <-aggregate(list(fantasypoints=df$fantasypoints), by=list(GAME_ID=df$GAME_ID, Game=df$Game, bat_id=df$bat_id,
                                                               BAT_HAND_CD=df$BAT_HAND_CD, PIT_HAND_CD=
                                                               df$PIT_HAND_CD, YEAR_ID=df$YEAR_ID), FUN=sum)
+#Checkpoint for aggregating from Atbat to Game Level
+sqlSave(channel, dfg, tablename=paste0("Game_Level_Stats_", "original"), rownames=FALSE, append=TRUE)
+
 #Aggregating from AtBat to Game level Pitcher Points
 dfgp <-aggregate(list(pitchingpoints=df$pitchingpoints), by=list(GAME_ID=df$GAME_ID, Game=df$Game, PIT_ID=df$PIT_ID,
                                                               BAT_HAND_CD=df$BAT_HAND_CD, PIT_HAND_CD=
                                                                 df$PIT_HAND_CD, YEAR_ID=df$YEAR_ID), FUN=sum)
+
+#Checkpoint for aggregating from Atbat to Game Level Pitcher Points
+sqlSave(channel, dfgp, tablename=paste0("Game_Level_Pitcher_Stats_", "original"), rownames=FALSE, append=TRUE)
+
 #Aggregating Game Level Ending Batting Statistics
 dfg2<-aggregate(list(gameab=df$gameab, gamehits=df$gamehits,gamesingles=df$gamesingles,gamedoubles=df$gamedoubles,
                      gametriples=df$gametriples, gamehr=df$gamehr, gamepa=df$gamepa, gameibb=df$gameibb, 
@@ -219,6 +230,9 @@ dfg<-merge(dfg,dfg2, by=c("bat_id","GAME_ID","BAT_HAND_CD","PIT_HAND_CD"))
 dfg<-merge(dfg,dfgstadium, by=c("bat_id","GAME_ID","BAT_HAND_CD","PIT_HAND_CD"))
 
 dfg <- dfg[order(dfg$Game, dfg$bat_id),]
+
+#Checkpoint for ending stats
+sqlSave(channel, dfg, tablename=paste0("Game_Level_Ending_Stats", "original"), rownames=FALSE, append=TRUE)
 
 for(i in 1:10)
 {
@@ -265,6 +279,9 @@ dfg[,iso]<-(rollingdoubles[[i]]+rollingtriples[[i]]+rollinghr[[i]])/rollingab[[i
 stbratio<-paste0('stbratio', i)
 dfg[,stbratio]<-rollingswingstrikes[[i]]/rollingballs[[i]]
 }
+
+#Checkpoint for rolling stats
+sqlSave(channel, dfg, tablename=paste0("Game_Level_Rolling_Stats", format(Sys.Date(), "%Y%m%d")), rownames=FALSE, append=TRUE)
 
 saveRDS(dfg, "C:/Users/Sean/Documents/R_Baseball_Project/Datasets/df7.rds")
 
