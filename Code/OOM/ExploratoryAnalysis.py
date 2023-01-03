@@ -1,4 +1,4 @@
-class Model:
+class ExploratoryAnalysis:
     def __init__(self):
         # Initialize the class
         pass
@@ -19,6 +19,10 @@ class Model:
         # Method for calculating variance inflation factor
         pass
 
-    def check_var_tpe(self):
+    def check_var_type(self):
         # Method for checking variable type
+        pass
+
+    def change_var_type(self):
+        # Method for converting variable types
         pass
