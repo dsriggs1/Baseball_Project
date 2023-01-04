@@ -1,7 +1,9 @@
 # Import the Classification class
 from Classification import Classification
+from GLM import GLM
 
-class LogisticRegression(Classification):
+
+class LogisticRegression(GLM, Classification):
     def __init__(self):
         super().__init__()
         # Initialize the class
