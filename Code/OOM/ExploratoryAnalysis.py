@@ -26,3 +26,27 @@ class ExploratoryAnalysis:
     def change_var_type(self):
         # Method for converting variable types
         pass
+
+    def standardize(self):
+        # Method for standardizing variables
+        pass
+
+    def min_max_scaling(self):
+        # Method for scaling variables
+        pass
+
+    def log_transform(self):
+        # Method for log transforming variables
+        pass
+
+    def binning(self):
+        # Method for binning variables
+        pass
+
+    def one_hot_encoding(self):
+        # Method for one-hot encoding variables
+        pass
+
+    def label_encoding(self):
+        # Method for label encoding variables
+        pass
