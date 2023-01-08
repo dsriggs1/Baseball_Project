@@ -1,6 +1,6 @@
 #Batter Points
 
-SET @single = 3
+SET @single = 3;
 SET @double=5;
 SET @triple=8;
 SET @hr=10   ;
@@ -61,12 +61,12 @@ CREATE TABLE at_bat_level_2016
 	       SKY_PARK_CD,
 	       WIN_PIT_ID,
 	       park_id,
+	       DAYNIGHT_PARK_CD,
 	       SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonhits,
-		SUM(ab_fl = 'T') OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonat_bats,
-		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT)/SUM(ab_fl = 'T') OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonbatting_average,
+		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT)/NULLIF(SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT), 0) AS seasonbatting_average,
 		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gamehits,
-		SUM(ab_fl) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameab,
-		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id)/SUM(ab_fl) OVER (PARTITION BY bat_id, GAME_ID ORDER BY bat_id, GAME_DATE, INN_CT) AS gameba,
+		SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameab,
+		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id)/NULLIF(SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY bat_id, GAME_DATE, INN_CT), 0) AS gameba,
 		SUM(CASE WHEN EVENT_CD = '20' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gamesingles,
 		SUM(CASE WHEN EVENT_CD = '21' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gamedoubles,
 		SUM(CASE WHEN EVENT_CD = '22' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gametriples,
@@ -76,8 +76,8 @@ CREATE TABLE at_bat_level_2016
 		SUM(CASE WHEN EVENT_CD = '14' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameubb,
 		SUM(PA_BALL_CT) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameballs,
 		SUM(PA_SWINGMISS_STRIKE_CT) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameswingstrikes,
-		SUM(ab_fl) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonab,
-		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT)/SUM(ab_fl) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonba,
+		SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonab,
+		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT)/NULLIF(SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT), 0) AS seasonba,
 		SUM(CASE WHEN EVENT_CD = '20' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonsingles,
 		SUM(CASE WHEN EVENT_CD = '21' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasondoubles,
 		SUM(CASE WHEN EVENT_CD = '22' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasontriples,
@@ -100,13 +100,13 @@ CREATE TABLE at_bat_level_2016
 	       END AS pitchingpoints,
 	       -- Add the case expression for fantasypoints
 		      CASE 
-		 WHEN EVENT_CD = "23" THEN 12
-		 WHEN EVENT_CD = "20" THEN 3 + RBI_CT * 3
-		 WHEN EVENT_CD = "21" THEN 6 + RBI_CT * 3
-		 WHEN EVENT_CD IN ("14", "16") THEN 3 + RBI_CT * 3
-		 WHEN EVENT_CD = "22" THEN 9 + RBI_CT * 3
+		 WHEN EVENT_CD = "23" THEN @hr
+		 WHEN EVENT_CD = "20" THEN @single + RBI_CT * @rbi
+		 WHEN EVENT_CD = "21" THEN @double + RBI_CT * @rbi
+		 WHEN EVENT_CD IN ("14", "16") THEN @walk + RBI_CT * @rbi
+		 WHEN EVENT_CD = "22" THEN @triple + RBI_CT * @rbi
 		 ELSE 0
-	       END AS fantasypoints,
+	       END AS battingpoints,
 	       CASE
 		 WHEN BAT_HAND_CD = 'R' AND PIT_HAND_CD = 'R' THEN 1
 		 WHEN BAT_HAND_CD = 'R' AND PIT_HAND_CD = 'L' THEN 2
@@ -134,11 +134,6 @@ CREATE TABLE at_bat_level_2016
 
 CREATE INDEX idx_at_bat_level_2016
 ON at_bat_level_2016 (seq_events, GAME_ID);
-
-SELECT seq_events, YEAR_ID, GAME_ID, GAME_DATE, BAT_HAND_CD, PIT_HAND_CD, bat_id, hit_fl, hits, gamehits, matchup_in
-FROM at_bat_level_2016
-ORDER BY bat_id, GAME_DATE, hits
-;
 
 DROP TABLE game_matchup_level_2016;
 CREATE TABLE game_matchup_level_2016
@@ -175,7 +170,7 @@ SELECT	YEAR_ID,
 	       MAX( gameballs              ) AS  gameballs        ,
 	       MAX( gameswingstrikes       ) AS  gameswingstrikes ,
 	       MAX( pitchingpoints         ) AS  pitchingpoints   ,
-	       MAX( fantasypoints          ) AS  fantasypoints    
+	       MAX( battingpoints          ) AS  battingpoints    
 	       
 	FROM at_bat_level_2016
 	GROUP BY YEAR_ID, GAME_ID, BAT_HAND_CD, PIT_HAND_CD, bat_id#, PIT_ID	
