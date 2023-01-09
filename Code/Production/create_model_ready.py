@@ -1,6 +1,7 @@
 import datetime as datetime
 
 import pandas as pd
+import polars as pl
 import requests
 import sqlalchemy
 from bs4 import BeautifulSoup
@@ -47,6 +48,19 @@ class Database:
             """
         with engine.connect() as con:
             con.execute(f'DELETE FROM {table_name} WHERE {where_clause}')
+
+    def db_pull(self, table_name, engine):
+        """
+        Pull data from a MySQL database.
+        Args:
+            table_name (str): The name of the table to pull data from.
+            engine (sqlalchemy.engine.base.Engine): The sqlalchemy engine object to use to connect to the database.
+
+        Returns:
+            Data from mysql table as a polars dataframe.
+        """
+        df = pl.read_sql(table_name, engine)
+        return df
 
 
 class WebScrape(Database):
@@ -215,7 +229,7 @@ class WebScrape(Database):
         :param date:
         :return stats:
         """
-        
+
         if not isinstance(date, str):
             raise TypeError("'date' must be a string in the format 'YYYYMMDD'")
 
