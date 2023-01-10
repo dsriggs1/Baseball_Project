@@ -1,3 +1,6 @@
+import polars as pl
+
+
 class ExploratoryAnalysis:
     def __init__(self):
         # Initialize the class
@@ -35,9 +38,10 @@ class ExploratoryAnalysis:
         # Method for scaling variables
         pass
 
-    def log_transform(self):
-        # Method for log transforming variables
-        pass
+    def transform_vars(self, df, var_list, numpy_func, var_suffix):
+        out = df.with_columns(numpy_func(pl.col(var_list)).suffix(var_suffix))
+        # Generic method for applying numpy transformations to variables
+        return out
 
     def binning(self):
         # Method for binning variables
