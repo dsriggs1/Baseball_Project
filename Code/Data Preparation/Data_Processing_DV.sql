@@ -62,31 +62,30 @@ CREATE TABLE at_bat_level_2016
 	       WIN_PIT_ID,
 	       park_id,
 	       DAYNIGHT_PARK_CD,
-	       SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonhits,
-		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT)/NULLIF(SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT), 0) AS seasonbatting_average,
-		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gamehits,
-		SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameab,
-		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id)/NULLIF(SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY bat_id, GAME_DATE, INN_CT), 0) AS gameba,
-		SUM(CASE WHEN EVENT_CD = '20' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gamesingles,
-		SUM(CASE WHEN EVENT_CD = '21' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gamedoubles,
-		SUM(CASE WHEN EVENT_CD = '22' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gametriples,
-		SUM(CASE WHEN EVENT_CD = '23' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gamehr,
-		SUM(CASE WHEN ab_fl = 'T' OR EVENT_CD IN (14, 15, 16) THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gamepa,
-		SUM(CASE WHEN EVENT_CD = '15' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameibb,
-		SUM(CASE WHEN EVENT_CD = '14' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameubb,
-		SUM(PA_BALL_CT) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameballs,
-		SUM(PA_SWINGMISS_STRIKE_CT) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id) AS gameswingstrikes,
-		SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonab,
-		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT)/NULLIF(SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT), 0) AS seasonba,
-		SUM(CASE WHEN EVENT_CD = '20' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonsingles,
-		SUM(CASE WHEN EVENT_CD = '21' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasondoubles,
-		SUM(CASE WHEN EVENT_CD = '22' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasontriples,
-		SUM(CASE WHEN EVENT_CD = '23' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonhr,
-		SUM(CASE WHEN ab_fl = 'T' OR EVENT_CD IN (14, 15, 16) THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonpa,
-		SUM(CASE WHEN EVENT_CD = '15' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonibb,
-		SUM(CASE WHEN EVENT_CD = '14' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonubb,
-		SUM(PA_BALL_CT) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonballs,
-		SUM(PA_SWINGMISS_STRIKE_CT) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS seasonswingstrikes,	
+		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_hits,
+		SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_ab,
+		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT)/NULLIF(SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY bat_id, GAME_DATE, INN_CT), 0) AS game_ba,
+		SUM(CASE WHEN EVENT_CD = '20' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_singles,
+		SUM(CASE WHEN EVENT_CD = '21' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_doubles,
+		SUM(CASE WHEN EVENT_CD = '22' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_triples,
+		SUM(CASE WHEN EVENT_CD = '23' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_hr,
+		SUM(CASE WHEN ab_fl = 'T' OR EVENT_CD IN (14, 15, 16) THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_pa,
+		SUM(CASE WHEN EVENT_CD = '15' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_ibb,
+		SUM(CASE WHEN EVENT_CD = '14' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_ubb,
+		SUM(PA_BALL_CT) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_balls,
+		SUM(PA_SWINGMISS_STRIKE_CT) OVER (PARTITION BY bat_id, GAME_ID ORDER BY GAME_DATE, bat_id, INN_CT) AS game_swing_strikes,
+		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_hits,
+		SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_ab,
+		SUM(CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT)/NULLIF(SUM(CASE WHEN ab_fl= 'T' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT), 0) AS season_ba,
+		SUM(CASE WHEN EVENT_CD = '20' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_singles,
+		SUM(CASE WHEN EVENT_CD = '21' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_doubles,
+		SUM(CASE WHEN EVENT_CD = '22' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_triples,
+		SUM(CASE WHEN EVENT_CD = '23' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_hr,
+		SUM(CASE WHEN ab_fl = 'T' OR EVENT_CD IN (14, 15, 16) THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_pa,
+		SUM(CASE WHEN EVENT_CD = '15' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_ibb,
+		SUM(CASE WHEN EVENT_CD = '14' THEN 1 ELSE 0 END) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_ubb,
+		SUM(PA_BALL_CT) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_balls,
+		SUM(PA_SWINGMISS_STRIKE_CT) OVER (PARTITION BY bat_id ORDER BY bat_id, GAME_DATE, INN_CT) AS season_swing_strikes,	
 		
 
 	       -- Add the case expression for hit_fl
@@ -97,7 +96,7 @@ CREATE TABLE at_bat_level_2016
 		 WHEN EVENT_CD IN ("20", "21", "22", "23") THEN -0.6 #hit_fl logic
 		 WHEN EVENT_CD IN ("14", "16") THEN -0.6
 		 ELSE 0
-	       END AS pitchingpoints,
+	       END AS pitching_points,
 	       -- Add the case expression for fantasypoints
 		      CASE 
 		 WHEN EVENT_CD = "23" THEN @hr
@@ -106,7 +105,7 @@ CREATE TABLE at_bat_level_2016
 		 WHEN EVENT_CD IN ("14", "16") THEN @walk + RBI_CT * @rbi
 		 WHEN EVENT_CD = "22" THEN @triple + RBI_CT * @rbi
 		 ELSE 0
-	       END AS battingpoints,
+	       END AS batting_points,
 	       CASE
 		 WHEN BAT_HAND_CD = 'R' AND PIT_HAND_CD = 'R' THEN 1
 		 WHEN BAT_HAND_CD = 'R' AND PIT_HAND_CD = 'L' THEN 2
@@ -158,22 +157,22 @@ SELECT	YEAR_ID,
 	       MAX(WIN_PIT_ID              ) AS  WIN_PIT_ID,
 	       MAX(park_id                 ) AS  park_id,
 	       MAX(DAYNIGHT_PARK_CD	   ) AS  DAYNIGHT_PARK_CD ,	
-	       MAX( gamehits               ) AS  gamehits         ,
-	       MAX( gameab                 ) AS  gameab           ,
-	       MAX( gamesingles            ) AS  gamesingles      ,
-	       MAX( gamedoubles            ) AS  gamedoubles      ,
-	       MAX( gametriples            ) AS  gametriples      ,
-	       MAX( gamehr                 ) AS  gamehr           ,
-	       MAX( gamepa                 ) AS  gamepa           ,
-	       MAX( gameibb                ) AS  gameibb          ,
-	       MAX( gameubb                ) AS  gameubb          ,
-	       MAX( gameballs              ) AS  gameballs        ,
-	       MAX( gameswingstrikes       ) AS  gameswingstrikes ,
-	       MAX( pitchingpoints         ) AS  pitchingpoints   ,
-	       MAX( battingpoints          ) AS  battingpoints    
+	       MAX( game_hits               ) AS  game_hits         ,
+	       MAX( game_ab                 ) AS  game_ab           ,
+	       MAX( game_singles            ) AS  game_singles      ,
+	       MAX( game_doubles            ) AS  game_doubles      ,
+	       MAX( game_triples            ) AS  game_triples      ,
+	       MAX( game_hr                 ) AS  game_hr           ,
+	       MAX( game_pa                 ) AS  game_pa           ,
+	       MAX( game_ibb                ) AS  game_ibb          ,
+	       MAX( game_ubb                ) AS  game_ubb          ,
+	       MAX( game_balls              ) AS  game_balls        ,
+	       MAX( game_swing_strikes       ) AS  game_swing_strikes ,
+	       MAX( pitching_points         ) AS  pitching_points   ,
+	       MAX( batting_points          ) AS  batting_points    
 	       
 	FROM at_bat_level_2016
-	GROUP BY YEAR_ID, GAME_ID, BAT_HAND_CD, PIT_HAND_CD, bat_id#, PIT_ID	
+	GROUP BY YEAR_ID, GAME_ID, GAME_DATE, BAT_HAND_CD, PIT_HAND_CD, bat_id#, PIT_ID	
 	;
 	
 	CREATE INDEX game_matchup_level_2016
