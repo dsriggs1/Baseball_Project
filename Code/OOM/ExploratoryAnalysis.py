@@ -43,6 +43,23 @@ class ExploratoryAnalysis:
         # Generic method for applying numpy transformations to variables
         return out
 
+    def categorical_summary(self, df, var, groupby_var):
+        # method for summarizing categorical variables
+        q = (
+            df.lazy()
+            .groupby(groupby_var)
+            .agg(
+                [
+                    pl.sum(var).alias("sum"),
+                    pl.mean(var).alias("mean"),
+                    pl.median(var).alias("median"),
+                    pl.max(var).alias("max"),
+                    pl.min(var).alias("min")
+                ]
+            )
+        )
+        return q.collect()
+
     def binning(self):
         # Method for binning variables
         pass
