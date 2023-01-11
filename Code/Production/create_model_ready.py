@@ -10,11 +10,12 @@ from pybaseball import statcast
 
 
 class Database:
-    def __init__(self, uid, pwd, host, db):
+    def __init__(self, uid, pwd, host, db, port):
         self.uid = uid
         self.pwd = pwd
         self.host = host
         self.db = db
+        self.port = port
 
     def db_connect(self):
         """
@@ -22,6 +23,13 @@ class Database:
         """
         engine = sqlalchemy.create_engine('mysql+pymysql://{}:{}@{}/{}'.format(self.uid, self.pwd, self.host, self.db))
         return engine
+
+    def db_connect_polars(self):
+        """
+        Create a connection to a MySQL database to pull data for a Polars DataFrame.
+        """
+        uri = ('mysql://{}:{}@{}:{}/{}'.format(self.uid, self.pwd, self.host, self.port, self.db))
+        return uri
 
     def db_insert(self, df, table_name, engine):
         """
@@ -49,23 +57,23 @@ class Database:
         with engine.connect() as con:
             con.execute(f'DELETE FROM {table_name} WHERE {where_clause}')
 
-    def db_pull(self, table_name, engine):
+    def db_pull(self, query, uri):
         """
         Pull data from a MySQL database.
         Args:
-            table_name (str): The name of the table to pull data from.
-            engine (sqlalchemy.engine.base.Engine): The sqlalchemy engine object to use to connect to the database.
+            query (str): SQL query to define what data to populate the polars df with.
+            uri (str): The uri object to use to connect to the database.
 
         Returns:
             Data from mysql table as a polars dataframe.
         """
-        df = pl.read_sql(table_name, engine)
+        df = pl.read_sql(query, uri)
         return df
 
 
 class WebScrape(Database):
-    def __init__(self, uid, pwd, host, db):
-        super().__init__(uid, pwd, host, db)
+    def __init__(self, uid, pwd, host, db, port):
+        super().__init__(uid, pwd, host, db, port)
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
         }
