@@ -38,9 +38,21 @@ class ExploratoryAnalysis:
         # Method for scaling variables
         pass
 
-    def transform_vars(self, df, var_list, numpy_func, var_suffix):
+    def transform_vars(self, df: pl.DataFrame, var_list: List[str],
+                       numpy_func: Callable, var_suffix: str) -> pl.DataFrame:
+        """
+        Applies a numpy transformation to a list of variables in a polars dataframe and adds a suffix to the resulting columns.
+
+        Parameters:
+            - df (pl.DataFrame): The dataframe to apply the transformation to.
+            - var_list (List[str]): A list of strings representing the variables to transform.
+            - numpy_func (Callable): A numpy function to apply to the variables.
+            - var_suffix (str): A string to append as suffix to the transformed variable names.
+
+        Returns:
+            - pl.DataFrame: A copy of the input dataframe with the transformed variables.
+        """
         out = df.with_columns(numpy_func(pl.col(var_list)).suffix(var_suffix))
-        # Generic method for applying numpy transformations to variables
         return out
 
     def categorical_summary(self, df, var, groupby_var):
