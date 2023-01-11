@@ -1,3 +1,5 @@
+from typing import Callable
+
 import polars as pl
 
 
@@ -22,9 +24,18 @@ class ExploratoryAnalysis:
         # Method for calculating variance inflation factor
         pass
 
-    def check_var_type(self):
-        # Method for checking variable type
-        pass
+    def check_var_type(self, df: pl.DataFrame, var_list: list[str]):
+        """
+            Print the data type of a variable in a DataFrame.
+
+            Parameters:
+                df (polars.DataFrame): The DataFrame containing the variable.
+                var_list (str): List of variables to check.
+
+            Returns:
+                None
+            """
+        list(map(lambda var: print(df[var].dtype), var_list))
 
     def change_var_type(self):
         # Method for converting variable types
@@ -38,7 +49,7 @@ class ExploratoryAnalysis:
         # Method for scaling variables
         pass
 
-    def transform_vars(self, df: pl.DataFrame, var_list: List[str],
+    def transform_vars(self, df: pl.DataFrame, var_list: list[str],
                        numpy_func: Callable, var_suffix: str) -> pl.DataFrame:
         """
         Applies a numpy transformation to a list of variables in a polars dataframe and adds a suffix to the resulting columns.
