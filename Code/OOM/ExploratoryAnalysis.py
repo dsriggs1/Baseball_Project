@@ -41,9 +41,21 @@ class ExploratoryAnalysis:
         # Method for converting variable types
         pass
 
-    def standardize(self):
-        # Method for standardizing variables
-        pass
+    def standardize(self, df: pl.DataFrame, var_list: list[str]):
+        """Standardize a given list of columns in a dataframe.
+
+        Parameters:
+            df (polar.DataFrame): The dataframe to be standardized.
+            var_list (list): A list of column names in the dataframe to be standardized.
+
+        Returns:
+            polar.DataFrame: The input dataframe with the specified columns standardized. The column names are suffixed with "_standard".
+        """
+        out = df.with_columns([
+            ((pl.col(var_list) + pl.col(var_list).mean())
+             / pl.col(var_list).std()).suffix("_standard")
+        ])
+        return out
 
     def min_max_scaling(self):
         # Method for scaling variables
