@@ -3,10 +3,9 @@ from typing import Callable
 import polars as pl
 
 
-class ExploratoryAnalysis:
-    def __init__(self):
-        # Initialize the class
-        pass
+class ExploratoryAnalysis(Database):
+    def __init__(self, df: pl.DataFrame):
+        self.df = df
 
     def plot(self):
         # Method for plotting
