@@ -13,20 +13,26 @@ class ExploratoryAnalysis(Database):
 
 
 class Plotting(ExploratoryAnalysis):
-    def __init__(self, df, uid, pwd, host, db, port, x, y, marker):
+    def __init__(self, df, uid, pwd, host, db, port, x, y, marker, xlabel, ylabel, color, edgecolor, alpha):
         super().__init__(uid, pwd, host, db, port, df)
         self.x = x
         self.y = y
         self.marker = marker
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.color = color
+        self.edgecolor = edgecolor
+        self.alpha = alpha
 
-    def scatterplot(self, xlabel, ylabel):
+    def scatterplot(self):
         plt.scatter(self.df.select(self.x), self.df.select(self.y), self.marker == 'o')
-        plt.xlabel(self.x)
-        plt.ylabel(self.y)
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
 
-    def histogram(self):
-        # Method for plotting histograms
-        pass
+    def histogram(self, bins, var):
+        plt.hist(self.df.select(var), bins=bins, color=self.color, edgecolor=self.edgecolor, alpha=self.alpha)
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
 
     def heatmap(self):
         # Method for plotting heatmaps
