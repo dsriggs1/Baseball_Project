@@ -47,8 +47,10 @@ class Plotting(ExploratoryAnalysis):
         pass
 
     def timeseries(self):
-        # Method for plotting timeseries plots
-        pass
+        plt.plot(self.df.select(self.x), self.df.select(self.y), self.marker == 'o', self.alpha, linewidth=2,
+                 linestyle='dashed')
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
 
     class VariableManipulation(ExploratoryAnalysis):
         def __init__(self, df, uid, pwd, host, db, port, var_list):
