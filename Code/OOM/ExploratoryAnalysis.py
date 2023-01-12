@@ -1,23 +1,28 @@
 from typing import Callable
 
+import matplotlib.pyplot as plt
 import polars as pl
 
 from Code.Production.create_model_ready import Database
 
 
 class ExploratoryAnalysis(Database):
-    def __init__(self, df, uid, pwd, host, db, port):
+    def __init__(self, uid, pwd, host, db, port, df):
         super().__init__(uid, pwd, host, db, port)
         self.df = df
 
 
 class Plotting(ExploratoryAnalysis):
-    def __init__(self, df, uid, pwd, host, db, port):
-        super().__init__(df, uid, pwd, host, db, port)
+    def __init__(self, df, uid, pwd, host, db, port, x, y, marker):
+        super().__init__(uid, pwd, host, db, port, df)
+        self.x = x
+        self.y = y
+        self.marker = marker
 
-    def scatterplot(self):
-        # Method for plotting scatterplots
-        pass
+    def scatterplot(self, xlabel, ylabel):
+        plt.scatter(self.df.select(self.x), self.df.select(self.y), self.marker == 'o')
+        plt.xlabel(self.x)
+        plt.ylabel(self.y)
 
     def histogram(self):
         # Method for plotting histograms
@@ -105,12 +110,26 @@ class Plotting(ExploratoryAnalysis):
             # Method for creating yeo-johnson variables
             pass
 
+        def missing_val(self):
+            # Method for handling missing values
+            pass
+
+        def binning(self):
+            # Method for binning variables
+            pass
+
+        def one_hot_encoding(self):
+            # Method for one-hot encoding variables
+            pass
+
+        def label_encoding(self):
+            # Method for label encoding variables
+            pass
+
+
+class SummarizeData(ExploratoryAnalysis):
     def corr(self):
         # Method for calculating correlations
-        pass
-
-    def missing_val(self):
-        # Method for handling missing values
         pass
 
     def categorical_summary(self, df, var, groupby_var):
@@ -129,15 +148,3 @@ class Plotting(ExploratoryAnalysis):
             )
         )
         return q.collect()
-
-    def binning(self):
-        # Method for binning variables
-        pass
-
-    def one_hot_encoding(self):
-        # Method for one-hot encoding variables
-        pass
-
-    def label_encoding(self):
-        # Method for label encoding variables
-        pass
