@@ -113,10 +113,6 @@ class Plotting(ExploratoryAnalysis):
         # Method for handling missing values
         pass
 
-    def vif(self):
-        # Method for calculating variance inflation factor
-        pass
-
     def categorical_summary(self, df, var, groupby_var):
         # method for summarizing categorical variables
         q = (
