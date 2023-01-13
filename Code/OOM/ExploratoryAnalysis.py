@@ -74,7 +74,7 @@ class Plotting(ExploratoryAnalysis):
             # Method for converting variable types
             pass
 
-        def standardize(self):
+        def z_score_scaling(self):
             """Standardize a given list of columns in a dataframe.
 
             Parameters:
@@ -85,14 +85,30 @@ class Plotting(ExploratoryAnalysis):
                 polar.DataFrame: The input dataframe with the specified columns standardized. The column names are suffixed with "_standard".
             """
             out = self.df.with_columns([
-                ((pl.col(self.var_list) + pl.col(self.var_list).mean())
-                 / pl.col(self.var_list).std()).suffix("_standard")
+                ((pl.col(self.var_list) - pl.col(self.var_list).mean())
+                 / pl.col(self.var_list).std()).suffix("_zscore")
             ])
             return out
 
         def min_max_scaling(self):
-            # Method for scaling variables
-            pass
+            out = self.df.with_columns([
+                ((pl.col(self.var_list) - pl.col(self.var_list).min())
+                 / (pl.col(self.var_list).max() - pl.col(self.var_list).min())).suffix("_minmax")
+            ])
+            return out
+
+        def range_scaling(self):
+            out = self.df.with_columns([
+                ((pl.col(self.var_list)
+                  / (pl.col(self.var_list).max() - pl.col(self.var_list).min()))).suffix("_range")
+            ])
+            return out
+
+        def std_scaling(self):
+            out = self.df.with_columns([
+                (pl.col(self.var_list) / pl.col(self.var_list).std()).suffix("_std")
+            ])
+            return out
 
         def transform_vars(self, numpy_func: Callable, var_suffix: str) -> pl.DataFrame:
             """
