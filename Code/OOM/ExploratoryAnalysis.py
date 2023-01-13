@@ -96,20 +96,20 @@ class Plotting(ExploratoryAnalysis):
                 ((pl.col(self.var_list) - pl.col(self.var_list).min())
                  / (pl.col(self.var_list).max() - pl.col(self.var_list).min())).suffix("_minmax")
             ])
-            return out.collect()
+            return out
 
         def range_scaling(self):
             out = self.df.lazy().with_columns([
                 ((pl.col(self.var_list)
                   / (pl.col(self.var_list).max() - pl.col(self.var_list).min()))).suffix("_range")
             ])
-            return out.collect()
+            return out
 
         def std_scaling(self):
             out = self.df.lazy().with_columns([
                 (pl.col(self.var_list) / pl.col(self.var_list).std()).suffix("_std")
             ])
-            return out.collect()
+            return out
 
         def transform_vars(self, numpy_func: Callable, var_suffix: str) -> pl.DataFrame:
             """
@@ -125,7 +125,7 @@ class Plotting(ExploratoryAnalysis):
                 - pl.DataFrame: A copy of the input dataframe with the transformed variables.
             """
             out = self.df.lazy().with_columns(numpy_func(pl.col(self.var_list)).suffix(var_suffix))
-            return out.collect()
+            return out
 
         def create_interaction(self):
             # Method for creating interaction variables
@@ -172,4 +172,4 @@ class SummarizeData(ExploratoryAnalysis):
                 ]
             )
         )
-        return out.collect()
+        return out
