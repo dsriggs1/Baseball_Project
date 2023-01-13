@@ -13,7 +13,8 @@ class ExploratoryAnalysis(Database):
 
 
 class Plotting(ExploratoryAnalysis):
-    def __init__(self, df, uid, pwd, host, db, port, x, y, marker, xlabel, ylabel, color, edgecolor, alpha):
+    def __init__(self, df, uid, pwd, host, db, port, x, y, marker=None, xlabel=None, ylabel=None, color=None,
+                 edgecolor=None, alpha=None):
         super().__init__(uid, pwd, host, db, port, df)
         self.x = x
         self.y = y
@@ -24,10 +25,11 @@ class Plotting(ExploratoryAnalysis):
         self.edgecolor = edgecolor
         self.alpha = alpha
 
-    def scatterplot(self):
-        plt.scatter(self.df.select(self.x).collect(), self.df.select(self.y).collect(), self.marker)
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
+    def scatterplot(self, marker=None, xlabel=None, ylabel=None, color=None, edgecolor=None, alpha=None):
+        plt.scatter(self.df.select(self.x).collect(), self.df.select(self.y).collect(), marker=marker, color=color,
+                    edgecolor=edgecolor, alpha=alpha)
+        plt.xlabel(xlabel if xlabel else self.xlabel)
+        plt.ylabel(ylabel if ylabel else self.ylabel)
 
     def histogram(self, bins, var):
         plt.hist(self.df.select(var).collect(), bins=bins, color=self.color, edgecolor=self.edgecolor, alpha=self.alpha)
