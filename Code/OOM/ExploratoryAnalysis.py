@@ -68,7 +68,7 @@ class Plotting(ExploratoryAnalysis):
                 Returns:
                     None
                 """
-            list(map(lambda var: print(df[var].dtype), var_list))
+            list(map(lambda var: print(self.df[var].dtype), self.var_list))
 
         def change_var_type(self):
             # Method for converting variable types
@@ -84,9 +84,9 @@ class Plotting(ExploratoryAnalysis):
             Returns:
                 polar.DataFrame: The input dataframe with the specified columns standardized. The column names are suffixed with "_standard".
             """
-            out = df.with_columns([
-                ((pl.col(var_list) + pl.col(var_list).mean())
-                 / pl.col(var_list).std()).suffix("_standard")
+            out = self.df.with_columns([
+                ((pl.col(self.var_list) + pl.col(self.var_list).mean())
+                 / pl.col(self.var_list).std()).suffix("_standard")
             ])
             return out
 
@@ -107,7 +107,7 @@ class Plotting(ExploratoryAnalysis):
             Returns:
                 - pl.DataFrame: A copy of the input dataframe with the transformed variables.
             """
-            out = df.with_columns(numpy_func(pl.col(var_list)).suffix(var_suffix))
+            out = self.df.with_columns(numpy_func(pl.col(self.var_list)).suffix(var_suffix))
             return out
 
         def create_interaction(self):
