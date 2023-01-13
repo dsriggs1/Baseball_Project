@@ -25,12 +25,12 @@ class Plotting(ExploratoryAnalysis):
         self.alpha = alpha
 
     def scatterplot(self):
-        plt.scatter(self.df.select(self.x), self.df.select(self.y), self.marker == 'o')
+        plt.scatter(self.df.select(self.x).collect(), self.df.select(self.y).collect(), self.marker == 'o')
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
 
     def histogram(self, bins, var):
-        plt.hist(self.df.select(var), bins=bins, color=self.color, edgecolor=self.edgecolor, alpha=self.alpha)
+        plt.hist(self.df.select(var).collect(), bins=bins, color=self.color, edgecolor=self.edgecolor, alpha=self.alpha)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
 
@@ -47,7 +47,8 @@ class Plotting(ExploratoryAnalysis):
         pass
 
     def timeseries(self):
-        plt.plot(self.df.select(self.x), self.df.select(self.y), self.marker == 'o', self.alpha, linewidth=2,
+        plt.plot(self.df.select(self.x).collect(), self.df.select(self.y).collect(), self.marker == 'o', self.alpha,
+                 linewidth=2,
                  linestyle='dashed')
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
@@ -84,31 +85,31 @@ class Plotting(ExploratoryAnalysis):
             Returns:
                 polar.DataFrame: The input dataframe with the specified columns standardized. The column names are suffixed with "_standard".
             """
-            out = self.df.with_columns([
+            out = self.df.lazy().with_columns([
                 ((pl.col(self.var_list) - pl.col(self.var_list).mean())
                  / pl.col(self.var_list).std()).suffix("_zscore")
             ])
-            return out
+            return out.collect()
 
         def min_max_scaling(self):
-            out = self.df.with_columns([
+            out = self.df.lazy().with_columns([
                 ((pl.col(self.var_list) - pl.col(self.var_list).min())
                  / (pl.col(self.var_list).max() - pl.col(self.var_list).min())).suffix("_minmax")
             ])
-            return out
+            return out.collect()
 
         def range_scaling(self):
-            out = self.df.with_columns([
+            out = self.df.lazy().with_columns([
                 ((pl.col(self.var_list)
                   / (pl.col(self.var_list).max() - pl.col(self.var_list).min()))).suffix("_range")
             ])
-            return out
+            return out.collect()
 
         def std_scaling(self):
-            out = self.df.with_columns([
+            out = self.df.lazy().with_columns([
                 (pl.col(self.var_list) / pl.col(self.var_list).std()).suffix("_std")
             ])
-            return out
+            return out.collect()
 
         def transform_vars(self, numpy_func: Callable, var_suffix: str) -> pl.DataFrame:
             """
@@ -123,8 +124,8 @@ class Plotting(ExploratoryAnalysis):
             Returns:
                 - pl.DataFrame: A copy of the input dataframe with the transformed variables.
             """
-            out = self.df.with_columns(numpy_func(pl.col(self.var_list)).suffix(var_suffix))
-            return out
+            out = self.df.lazy().with_columns(numpy_func(pl.col(self.var_list)).suffix(var_suffix))
+            return out.collect()
 
         def create_interaction(self):
             # Method for creating interaction variables
@@ -158,7 +159,7 @@ class SummarizeData(ExploratoryAnalysis):
 
     def categorical_summary(self, df, var, groupby_var):
         # method for summarizing categorical variables
-        q = (
+        out = (
             df.lazy()
             .groupby(groupby_var)
             .agg(
@@ -171,4 +172,4 @@ class SummarizeData(ExploratoryAnalysis):
                 ]
             )
         )
-        return q.collect()
+        return out.collect()
