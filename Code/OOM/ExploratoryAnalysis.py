@@ -25,7 +25,7 @@ class Plotting(ExploratoryAnalysis):
         self.alpha = alpha
 
     def scatterplot(self):
-        plt.scatter(self.df.select(self.x).collect(), self.df.select(self.y).collect(), self.marker == 'o')
+        plt.scatter(self.df.select(self.x).collect(), self.df.select(self.y).collect(), self.marker)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
 
@@ -47,7 +47,7 @@ class Plotting(ExploratoryAnalysis):
         pass
 
     def timeseries(self):
-        plt.plot(self.df.select(self.x).collect(), self.df.select(self.y).collect(), self.marker == 'o', self.alpha,
+        plt.plot(self.df.select(self.x).collect(), self.df.select(self.y).collect(), self.marker, self.alpha,
                  linewidth=2,
                  linestyle='dashed')
         plt.xlabel(self.xlabel)
