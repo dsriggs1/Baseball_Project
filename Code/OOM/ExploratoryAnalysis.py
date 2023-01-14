@@ -40,12 +40,28 @@ class Plotting(ExploratoryAnalysis):
         # Method for plotting heatmaps
         pass
 
+    def barplot(self, agg, xlabelsize, rotation=45):
+        out = (
+            self.df.lazy()
+            .groupby(self.y)
+            .agg(
+                [
+                    pl.sum(self.x).alias("sum"),
+                    pl.mean(self.x).alias("mean"),
+                    pl.median(self.x).alias("median"),
+                    pl.max(self.x).alias("max"),
+                    pl.min(self.x).alias("min")
+                ]
+            )
+        ).collect()
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        plt.bar(out[self.y], out[agg], color=self.color, edgecolor=self.edgecolor, alpha=self.alpha)
+        plt.xticks(rotation=rotation)
+        plt.tick_params(axis='x', labelsize=xlabelsize)
+
     def boxplot(self):
         # Method for plotting boxplots
-        pass
-
-    def barplot(self):
-        # Method for plotting barplots
         pass
 
     def timeseries(self):
