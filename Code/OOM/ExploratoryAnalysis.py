@@ -155,8 +155,16 @@ class Plotting(ExploratoryAnalysis):
 
 
 class SummarizeData(ExploratoryAnalysis):
-    def corr(self):
-        # Method for calculating correlations
+    def pearson_corr(self, var_list):
+        # Method for calculating pearson correlations
+        corr_df = self.df.select([
+            pl.col(var_list)
+        ]).collect()
+        return corr_df.pearson_corr()
+
+    def spearman_corr(self, var_list):
+        # Method for calculating spearman correlations
+
         pass
 
     def categorical_summary(self, df, var, groupby_var):
