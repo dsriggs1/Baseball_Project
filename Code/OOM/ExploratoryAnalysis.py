@@ -13,50 +13,41 @@ class ExploratoryAnalysis(Database):
 
 
 class Plotting(ExploratoryAnalysis):
-    def __init__(self, df, uid, pwd, host, db, port, x, y, marker=None, xlabel=None, ylabel=None, color=None,
-                 edgecolor=None, alpha=None):
+    def __init__(self, df, uid, pwd, host, db, port):
         super().__init__(uid, pwd, host, db, port, df)
-        self.x = x
-        self.y = y
-        self.marker = marker
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.color = color
-        self.edgecolor = edgecolor
-        self.alpha = alpha
 
-    def scatterplot(self, marker=None, xlabel=None, ylabel=None, color=None, edgecolor=None, alpha=None):
-        plt.scatter(self.df.select(self.x).collect(), self.df.select(self.y).collect(), marker=marker, color=color,
+    def scatterplot(self, x, y, marker=None, xlabel=None, ylabel=None, color=None, edgecolor=None, alpha=None):
+        plt.scatter(self.df.select(x).collect(), self.df.select(y).collect(), marker=marker, color=color,
                     edgecolor=edgecolor, alpha=alpha)
-        plt.xlabel(xlabel if xlabel else self.xlabel)
-        plt.ylabel(ylabel if ylabel else self.ylabel)
+        plt.xlabel(xlabel if xlabel else xlabel)
+        plt.ylabel(ylabel if ylabel else ylabel)
 
-    def histogram(self, bins, var):
-        plt.hist(self.df.select(var).collect(), bins=bins, color=self.color, edgecolor=self.edgecolor, alpha=self.alpha)
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
+    def histogram(self, x, y, var, xlabel=None, ylabel=None, bins=None):
+        plt.hist(self.df.select(var).collect(), bins=bins, color=None, edgecolor=None, alpha=None)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
 
     def heatmap(self):
         # Method for plotting heatmaps
         pass
 
-    def barplot(self, agg, xlabelsize, rotation=45):
+    def barplot(self, x, y, agg, xlabel=None, ylabel=None, xlabelsize=None, rotation=45):
         out = (
             self.df.lazy()
-            .groupby(self.y)
+            .groupby(y)
             .agg(
                 [
-                    pl.sum(self.x).alias("sum"),
-                    pl.mean(self.x).alias("mean"),
-                    pl.median(self.x).alias("median"),
-                    pl.max(self.x).alias("max"),
-                    pl.min(self.x).alias("min")
+                    pl.sum(x).alias("sum"),
+                    pl.mean(x).alias("mean"),
+                    pl.median(x).alias("median"),
+                    pl.max(x).alias("max"),
+                    pl.min(x).alias("min")
                 ]
             )
         ).collect()
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
-        plt.bar(out[self.y], out[agg], color=self.color, edgecolor=self.edgecolor, alpha=self.alpha)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.bar(out[y], out[agg], color=None, edgecolor=None, alpha=None)
         plt.xticks(rotation=rotation)
         plt.tick_params(axis='x', labelsize=xlabelsize)
 
@@ -64,12 +55,12 @@ class Plotting(ExploratoryAnalysis):
         # Method for plotting boxplots
         pass
 
-    def timeseries(self):
-        plt.plot(self.df.select(self.x).collect(), self.df.select(self.y).collect(), self.marker, self.alpha,
-                 linewidth=2,
-                 linestyle='dashed')
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
+    def timeseries(self, x, y, xlabel, ylabel, marker, alpha, linewidth, linestyle):
+        plt.plot(self.df.select(x).collect(), self.df.select(y).collect(), marker, alpha,
+                 linewidth=linewidth,
+                 linestyle=linestyle)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
 
     class VariableManipulation(ExploratoryAnalysis):
         def __init__(self, df, uid, pwd, host, db, port, var_list):
