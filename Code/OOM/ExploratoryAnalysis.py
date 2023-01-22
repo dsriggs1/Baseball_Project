@@ -16,14 +16,31 @@ class Plotting(ExploratoryAnalysis):
     def __init__(self, df, uid, pwd, host, db, port):
         super().__init__(uid, pwd, host, db, port, df)
 
-    def scatterplot(self, x, y, marker=None, xlabel=None, ylabel=None, color=None, edgecolor=None, alpha=None):
-        plt.scatter(self.df.select(x).collect(), self.df.select(y).collect(), marker=marker, color=color,
-                    edgecolor=edgecolor, alpha=alpha)
+    def scatterplot(self, x, y, i=None, axs=None, marker=None, xlabel=None, ylabel=None, title=None, color=None,
+                    edgecolor=None,
+                    alpha=None, label="Legend", loc="best"):
+        if axs is None:
+            plt.scatter(self.df.select(x).collect(), self.df.select(y).collect(), marker=marker, color=color,
+                        edgecolor=edgecolor, alpha=alpha)
+            plt.legend()
+            plt.legend(loc=loc)
+
+        else:
+            axs[i].hist(self.df.select(x).collect(), color=color)
+            axs[i].set_title(title)
         plt.xlabel(xlabel if xlabel else xlabel)
         plt.ylabel(ylabel if ylabel else ylabel)
 
-    def histogram(self, x, y, var, xlabel=None, ylabel=None, bins=None):
-        plt.hist(self.df.select(var).collect(), bins=bins, color=None, edgecolor=None, alpha=None)
+    def histogram(self, x, y, i=None, axs=None, xlabel=None, ylabel=None, bins=None, title=None, color=None,
+                  label="Legend", loc="best"):
+        if axs is None:
+            plt.hist(self.df.select(x).collect(), bins=bins, color=None, edgecolor=None, alpha=None)
+            plt.legend()
+            plt.legend(loc=loc)
+
+        else:
+            axs[i].hist(self.df.select(x).collect(), color=color)
+            axs[i].set_title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
 
