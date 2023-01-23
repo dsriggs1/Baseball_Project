@@ -294,9 +294,10 @@ class SummarizeData(ExploratoryAnalysis):
         return corr_df.pearson_corr()
 
     def spearman_corr(self):
-        # Method for calculating spearman correlations
-
-        pass
+        corr_df = self.df.select([
+            pl.col(self.var_list)
+        ]).collect().to_pandas().corr(method="spearman")
+        return corr_df
 
     def categorical_summary(self, df, var, groupby_var):
         # method for summarizing categorical variables
