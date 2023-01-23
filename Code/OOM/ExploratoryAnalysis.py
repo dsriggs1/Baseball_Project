@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 
 import matplotlib.pyplot as plt
 import polars as pl
@@ -238,19 +238,35 @@ class Plotting(ExploratoryAnalysis):
             # Method for creating yeo-johnson variables
             pass
 
-        def fill_missing_values(self, column, strategy="mean"):
+        def fill_missing_values(self, column: str, strategy: Optional[str] = None, interpolation: Optional[str] = None,
+                                expression: Optional[str] = None) -> pl.DataFrame:
             """
-            Fill missing values in a column by strategy. Valid
-            strategies are None, ‘forward’, ‘backward’, ‘min’, ‘max’, ‘mean’, ‘zero’, ‘one’
+            Fill missing values in a column either by strategy, interpolation, or expression.
+            Valid strategies are None, ‘forward’, ‘backward’, ‘min’, ‘max’, ‘mean’, ‘zero’, ‘one’
 
             :param column: Column to fill missing values
             :param strategy: Strategy to fill missing values
 
             :return: Polars DataFrame with missing values filled
             """
-            return self.df.with_column(
-                pl.col(column).fill_null(strategy=strategy),
-            )
+            non_none_count = sum([1 for x in (strategy, interpolation, expression) if x is not None])
+            if non_none_count > 1:
+                raise ValueError("Only one of strategy, interpolation, and expression can be set.")
+
+            if strategy != None:
+                df = df.with_column(
+                    pl.col(column).fill_null(strategy=strategy),
+                )
+            elif interpolation != None:
+                df = df.with_column(
+                    pl.col(column).interpolate(),
+                )
+            else:
+                df = df.with_column(
+                    pl.col(column).fill_null(expression),
+                )
+
+            return df
 
         def binning(self):
             # Method for binning variables
