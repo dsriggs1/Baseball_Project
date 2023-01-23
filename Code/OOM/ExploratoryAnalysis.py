@@ -16,9 +16,37 @@ class Plotting(ExploratoryAnalysis):
     def __init__(self, df, uid, pwd, host, db, port):
         super().__init__(uid, pwd, host, db, port, df)
 
-    def scatterplot(self, x, y, i=None, axs=None, marker=None, xlabel=None, ylabel=None, title=None, color=None,
-                    edgecolor=None,
-                    alpha=None, label="Legend", loc="best"):
+    """
+    Initialize the Plotting class by calling the super class's constructor.
+    :param df: DataFrame to be plotted
+    :param uid: User id for database connection
+    :param pwd: Password for database connection
+    :param host: Host for database connection
+    :param db: Database for connection
+    :param port: Port for database connection
+    """
+
+    def scatterplot(self, x: str, y: str, i: int = None, axs: object = None, marker: str = None, xlabel: str = None,
+                    ylabel: str = None, title: str = None, color: str = None,
+                    edgecolor: str = None, alpha: float = None, label: str = "Legend", loc: str = "best"):
+        """
+        Create a scatter plot using the given parameters.
+        :param x: x-axis column name
+        :param y: y-axis column name
+        :param i: index of the subplot
+        :param axs: axis of the subplot
+        :param marker: marker style for scatter plot
+        :param xlabel: label for x-axis
+        :param ylabel: label for y-axis
+        :param title: title of the plot
+        :param color: color of the points
+        :param edgecolor: edge color of the points
+        :param alpha: transparency of the points
+        :param label: label for legend
+        :param loc: location of the legend
+
+        :Returns: Scatterplot
+        """
         if axs is None:
             plt.scatter(self.df.select(x).collect(), self.df.select(y).collect(), marker=marker, color=color,
                         edgecolor=edgecolor, alpha=alpha)
@@ -31,8 +59,25 @@ class Plotting(ExploratoryAnalysis):
         plt.xlabel(xlabel if xlabel else xlabel)
         plt.ylabel(ylabel if ylabel else ylabel)
 
-    def histogram(self, x, y, i=None, axs=None, xlabel=None, ylabel=None, bins=None, title=None, color=None,
-                  label="Legend", loc="best"):
+    def histogram(self, x: str, y: str = None, i: int = None, axs: object = None, xlabel: str = None,
+                  ylabel: str = None, bins: int = None, title: str = None, color: str = None,
+                  label: str = "Legend", loc: str = "best"):
+        """
+        Create a histogram of the given column.
+        :param x: column name for histogram
+        :param y: column name for y-axis (if creating a 2D histogram)
+        :param i: index of the subplot
+        :param axs: axis of the subplot
+        :param xlabel: label for x-axis
+        :param ylabel: label for y-axis
+        :param bins: number of bins for histogram
+        :param title: title of the plot
+        :param color: color of the bars
+        :param label: label for legend
+        :param loc: location of the legend
+
+        :Returns: Histogram
+        """
         if axs is None:
             plt.hist(self.df.select(x).collect(), bins=bins, color=None, edgecolor=None, alpha=None)
             plt.legend()
@@ -79,8 +124,27 @@ class Plotting(ExploratoryAnalysis):
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
 
-    def combine_plots(self, plot_functions, x_values, y_values, title_values, nrows=2, ncols=1, color_values=None,
-                      legend=None, loc=None, figsize=(10, 4)):
+    def combine_plots(self, plot_functions: list[Callable], x_values: list[any], y_values: list[any],
+                      title_values: list[str], nrows: int = 2, ncols: int = 1, color_values: list[str] = None,
+                      legend: str = None, loc: str = None, figsize: tuple[int, int] = (10, 4)):
+        """
+        This function takes in a list of plot functions, x and y values, title values, and other optional parameters to generate multiple plots in one figure.
+
+        Parameters:
+        - plot_functions (List[Callable]): List of functions to generate plots
+        - x_values (List[Any]): List of x values for each plot
+        - y_values (List[Any]): List of y values for each plot
+        - title_values (List[str]): List of title values for each plot
+        - nrows (int): Number of rows in the figure. Default is 2
+        - ncols (int): Number of columns in the figure. Default is 1
+        - color_values (List[str]): List of color values for each plot. Default is None
+        - legend (str): The legend for the plot. Default is None
+        - loc (str): The location of the legend. Default is None
+        - figsize (Tuple[int, int]): The width and height of the figure. Default is (10, 4)
+
+        Returns:
+        Page of plots
+        """
         fig, axs = plt.subplots(nrows, ncols, figsize=figsize)
 
         for i, func in enumerate(plot_functions):
@@ -89,7 +153,7 @@ class Plotting(ExploratoryAnalysis):
             color = color_values[i] if color_values else None
             title = title_values[i] if title_values else None
             func(x=x, y=y, df=self.df, i=i, axs=axs, title=title, color=color)
-        plt.legend([legend], loc="lower right")
+        plt.legend([legend], loc=loc)
         plt.show()
 
     class VariableManipulation(ExploratoryAnalysis):
