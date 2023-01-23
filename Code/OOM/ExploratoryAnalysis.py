@@ -192,7 +192,7 @@ class Plotting(ExploratoryAnalysis):
                 ((pl.col(self.var_list) - pl.col(self.var_list).mean())
                  / pl.col(self.var_list).std()).suffix("_zscore")
             ])
-            return out.collect()
+            return out
 
         def min_max_scaling(self):
             out = self.df.lazy().with_columns([
@@ -282,14 +282,18 @@ class Plotting(ExploratoryAnalysis):
 
 
 class SummarizeData(ExploratoryAnalysis):
-    def pearson_corr(self, var_list):
+    def __init__(self, var_list, df, uid, pwd, host, db, port):
+        super().__init__(df, uid, pwd, host, db, port)
+        self.var_list = var_list
+
+    def pearson_corr(self):
         # Method for calculating pearson correlations
         corr_df = self.df.select([
-            pl.col(var_list)
+            pl.col(self.var_list)
         ]).collect()
         return corr_df.pearson_corr()
 
-    def spearman_corr(self, var_list):
+    def spearman_corr(self):
         # Method for calculating spearman correlations
 
         pass
