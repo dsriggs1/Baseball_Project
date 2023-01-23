@@ -238,9 +238,19 @@ class Plotting(ExploratoryAnalysis):
             # Method for creating yeo-johnson variables
             pass
 
-        def missing_val(self):
-            # Method for handling missing values
-            pass
+        def fill_missing_values(self, column, strategy="mean"):
+            """
+            Fill missing values in a column by strategy. Valid
+            strategies are None, ‘forward’, ‘backward’, ‘min’, ‘max’, ‘mean’, ‘zero’, ‘one’
+
+            :param column: Column to fill missing values
+            :param strategy: Strategy to fill missing values
+
+            :return: Polars DataFrame with missing values filled
+            """
+            return self.df.with_column(
+                pl.col(column).fill_null(strategy=strategy),
+            )
 
         def binning(self):
             # Method for binning variables
