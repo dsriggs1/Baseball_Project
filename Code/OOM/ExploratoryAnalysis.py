@@ -79,6 +79,19 @@ class Plotting(ExploratoryAnalysis):
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
 
+    def combine_plots(self, plot_functions, x_values, y_values, title_values, nrows=2, ncols=1, color_values=None,
+                      legend=None, loc=None, figsize=(10, 4)):
+        fig, axs = plt.subplots(nrows, ncols, figsize=figsize)
+
+        for i, func in enumerate(plot_functions):
+            x = x_values[i]
+            y = y_values[i] if y_values else None
+            color = color_values[i] if color_values else None
+            title = title_values[i] if title_values else None
+            func(x=x, y=y, df=self.df, i=i, axs=axs, title=title, color=color)
+        plt.legend([legend], loc="lower right")
+        plt.show()
+
     class VariableManipulation(ExploratoryAnalysis):
         def __init__(self, df, uid, pwd, host, db, port, var_list):
             super().__init__(df, uid, pwd, host, db, port)
