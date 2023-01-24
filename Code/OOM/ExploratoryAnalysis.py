@@ -268,6 +268,14 @@ class Plotting(ExploratoryAnalysis):
 
             return df
 
+        def drop_missing_values(self) -> pl.DataFrame:
+            """
+            Drop rows with missing values
+            :return: Polars DataFrame with rows with missing values dropped
+            """
+            df = self.df.drop_nulls()
+            return df
+
         def binning(self):
             # Method for binning variables
             pass
