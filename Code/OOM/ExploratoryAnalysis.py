@@ -254,15 +254,15 @@ class Plotting(ExploratoryAnalysis):
                 raise ValueError("Only one of strategy, interpolation, and expression can be set.")
 
             if strategy != None:
-                df = df.with_column(
+                df = self.df.with_column(
                     pl.col(column).fill_null(strategy=strategy),
                 )
             elif interpolation != None:
-                df = df.with_column(
+                df = self.df.with_column(
                     pl.col(column).interpolate(),
                 )
             else:
-                df = df.with_column(
+                df = self.df.with_column(
                     pl.col(column).fill_null(expression),
                 )
 
