@@ -272,9 +272,14 @@ class Plotting(ExploratoryAnalysis):
             # Method for binning variables
             pass
 
-        def one_hot_encoding(self):
-            # Method for one-hot encoding variables
-            pass
+        def one_hot_encoding(self, var_list, columns_to_drop=None):
+            out = self.df.select([
+                pl.col(var_list)
+            ]).collect().to_dummies()
+
+            if columns_to_drop != None:
+                out = self.df.drop(columns_to_drop)
+            return out
 
         def label_encoding(self):
             # Method for label encoding variables
