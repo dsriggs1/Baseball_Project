@@ -2,6 +2,7 @@ from typing import Callable, Optional
 
 import matplotlib.pyplot as plt
 import polars as pl
+from sklearn.preprocessing import LabelEncoder
 
 from Code.Production.create_model_ready import Database
 
@@ -289,9 +290,13 @@ class Plotting(ExploratoryAnalysis):
                 out = self.df.drop(columns_to_drop)
             return out
 
-        def label_encoding(self):
-            # Method for label encoding variables
-            pass
+        def label_encoding(self, var_list):
+            out = self.df.select([
+                pl.col(var_list)
+            ]).collect().to_pandas()
+
+            out = pl.DataFrame(out.apply(LabelEncoder().fit_transform))
+            return out
 
 
 class SummarizeData(ExploratoryAnalysis):
