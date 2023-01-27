@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Optional, List
 
 import matplotlib.pyplot as plt
 import polars as pl
@@ -277,9 +277,21 @@ class Plotting(ExploratoryAnalysis):
             df = self.df.drop_nulls()
             return df
 
-        def binning(self):
-            # Method for binning variables
-            pass
+        def binning(self, df: pl.DataFrame, column: str, bins: List[int], labels: Optional[List[str]] = None) -> pl.DataFrame
+            """Bin specified column in a Polars DataFrame
+
+            Parameters:
+                df (polar.DataFrame): The dataframe to be binned.
+                column (str): The column to be binned.
+                Bins to create. Must be a list.
+                Labels to assign to the bins. If given the length of labels must be len(bins) + 1.
+
+            Returns:
+                polar.DataFrame: A polars dataframe with the specified column binned.
+
+            """
+            out = pl.cut(df.select(column).collect().to_series(), bins=bins, labels=labels)
+            return out
 
         def one_hot_encoding(self, var_list, columns_to_drop=None):
             out = self.df.select([
