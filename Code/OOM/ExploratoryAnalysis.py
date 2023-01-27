@@ -277,7 +277,8 @@ class Plotting(ExploratoryAnalysis):
             df = self.df.drop_nulls()
             return df
 
-        def binning(self, df: pl.DataFrame, column: str, bins: List[int], labels: Optional[List[str]] = None) -> pl.DataFrame
+        def binning(self, df: pl.DataFrame, column: str, bins: List[int],
+                    labels: Optional[List[str]] = None) -> pl.DataFrame:
             """Bin specified column in a Polars DataFrame
 
             Parameters:
