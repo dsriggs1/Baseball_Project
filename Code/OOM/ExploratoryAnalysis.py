@@ -173,6 +173,7 @@ class Plotting(ExploratoryAnalysis):
                 Returns:
                     None
                 """
+            self.df = self.df.collect()
             list(map(lambda var: print(self.df[var].dtype), self.var_list))
 
         def change_var_type(self):
