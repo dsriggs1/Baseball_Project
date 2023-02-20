@@ -27,6 +27,9 @@ class Classification:
         self.y_true = y_true
         self.y_pred = y_pred
 
+    def predict(self):
+        pass
+
     def conf_matrix(self) -> np.ndarray:
         """
         Create a confusion matrix.
