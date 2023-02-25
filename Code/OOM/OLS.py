@@ -2,6 +2,7 @@
 from Regression import Regression
 import pandas as pd
 import numpy as np
+import polars as pl
 import matplotlib as plt
 from scipy.stats import shapiro
 from scipy.stats import bartlett, levene
@@ -18,7 +19,7 @@ class OLS(Regression):
         # Initialize the class
         pass
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> None:
+    def fit(self, x: np.ndarray, y: np.ndarray) -> None:
         """Fit the regression model to the input data.
 
         Parameters:
@@ -28,12 +29,17 @@ class OLS(Regression):
         Returns:
         None
         """
-        if not isinstance(X, np.ndarray):
+        if isinstance(x, pl.DataFrame):
+            x = x.to_numpy()
+        if isinstance(y, pl.DataFrame):
+            y = y.to_numpy()
+
+        if not isinstance(x, np.ndarray):
             raise TypeError("Input data X must be a numpy.ndarray")
         if not isinstance(y, np.ndarray):
             raise TypeError("Target variable y must be a numpy.ndarray")
-        X = np.insert(X, 0, 1, axis=1)  # Add bias term
-        self.coefficients = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(y)
+        x = np.insert(x, 0, 1, axis=1)  # Add bias term
+        self.coefficients = np.linalg.inv(x.T.dot(x)).dot(x.T).dot(y)
 
     def normality(self) -> None:
         """Plot a histogram of the residuals to test for normality."""
