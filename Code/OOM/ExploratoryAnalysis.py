@@ -295,7 +295,21 @@ class Plotting(ExploratoryAnalysis):
             out = pl.cut(df.select(column).collect().to_series(), bins=bins, labels=labels)
             return out
 
-        def one_hot_encoding(self, var_list, columns_to_drop=None):
+        def one_hot_encoding(self, var_list: List[str], columns_to_drop: Optional[List[str]] = None) -> pl.DataFrame:
+            """
+            Applies one-hot encoding to the specified columns in the input DataFrame.
+
+            Args:
+            - var_list (List[str]): A list of column names to apply one-hot encoding to.
+            - columns_to_drop (Optional[List[str]]): A list of column names to drop from the output DataFrame. Defaults to None.
+
+            Returns:
+            - pl.DataFrame: The output DataFrame with one-hot encoded columns and optional columns dropped.
+            """
+
+            if not var_list:
+                raise ValueError("var_list cannot be empty.")
+
             out = self.df.select([
                 pl.col(var_list)
             ]).collect().to_dummies()
@@ -304,7 +318,19 @@ class Plotting(ExploratoryAnalysis):
                 out = self.df.drop(columns_to_drop)
             return out
 
-        def label_encoding(self, var_list):
+        def label_encoding(self, var_list: List[str]) -> pl.DataFrame:
+            """
+            Applies label encoding to the specified columns in the input DataFrame.
+
+            Args:
+            - var_list (List[str]): A list of column names to apply label encoding to.
+
+            Returns:
+            - pd.DataFrame: The output DataFrame with label encoded columns.
+            """
+            # Check that var_list is not empty
+            if not var_list:
+                raise ValueError("var_list cannot be empty.")
             out = self.df.select([
                 pl.col(var_list)
             ]).collect().to_pandas()
