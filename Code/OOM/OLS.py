@@ -1,5 +1,6 @@
 # Import the Regression class
-from Regression import Regression
+
+from Code.OOM.Regression import Regression
 import pandas as pd
 import numpy as np
 import polars as pl
@@ -12,8 +13,8 @@ from statsmodels.stats.diagnostic import acorr_ljungbox
 from statsmodels.stats.stattools import durbin_watson
 from statsmodels.stats.api import linear_rainbow
 from statsmodels.stats.outliers_influence import variance_inflation_factor
-
-class OLS():
+from scipy.stats import t
+class OLS(Regression):
     def __init__(self):
         super().__init__()
         self.x = None
