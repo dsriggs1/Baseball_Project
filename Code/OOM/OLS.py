@@ -13,11 +13,16 @@ from statsmodels.stats.stattools import durbin_watson
 from statsmodels.stats.api import linear_rainbow
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
-class OLS(Regression):
+class OLS():
     def __init__(self):
         super().__init__()
-        # Initialize the class
-        pass
+        self.x = None
+        self.y = None
+        self.n_samples = None
+        self.n_features = None
+        self.coefficients = None
+        self.residuals = None
+        self.rsquared = None
 
     def fit(self, x: np.ndarray, y: np.ndarray) -> None:
         """Fit the regression model to the input data.
@@ -39,7 +44,17 @@ class OLS(Regression):
         if not isinstance(y, np.ndarray):
             raise TypeError("Target variable y must be a numpy.ndarray")
         x = np.insert(x, 0, 1, axis=1)  # Add bias term
-        self.coefficients = np.linalg.inv(x.T.dot(x)).dot(x.T).dot(y)
+
+        self.x = x
+        self.y = y
+        self.n_samples, self.n_features = self.x.shape
+
+        self.coefficients = np.linalg.inv(self.x.T.dot(self.x)).dot(self.x.T).dot(self.y)
+        self.y_pred = self.x.dot(self.coefficients)
+        self.residuals = self.y - self.y_pred
+        self.ss_total = np.sum((self.y - np.mean(self.y)) ** 2)
+        self.ss_reg = np.sum((self.y_pred - np.mean(self.y)) ** 2)
+        self.rsquared = self.ss_reg / self.ss_total
 
     def normality(self) -> None:
         """Plot a histogram of the residuals to test for normality."""
@@ -161,3 +176,18 @@ class OLS(Regression):
         else:
             print('Residuals are not linear (reject H0)')
 
+
+    def summary(self):
+        """Print summary statistics of the linear regression model."""
+        if self.coefficients is None:
+            raise ValueError("Model has not been fit yet.")
+        table = pd.DataFrame(index=['Intercept'] + [f'Feature {i}' for i in range(1, self.n_features)],
+                             columns=['Coefficient', 'Std. Error', 't-value', 'p-value'])
+        table['Coefficient'] = self.coefficients
+        table.loc['Intercept', 'Coefficient'] = self.coefficients[0]
+        table['Std. Error'] = np.sqrt(np.sum(self.residuals ** 2) / (self.n_samples - self.n_features)) \
+                              * np.sqrt(np.diag(np.linalg.inv(self.x.T.dot(self.x))))
+        table['t-value'] = table['Coefficient'] / table['Std. Error']
+        table['p-value'] = [2 * t.sf(np.abs(tv), self.n_samples - self.n_features) for tv in table['t-value']]
+        table.loc['R-squared'] = [self.rsquared, np.nan, np.nan, np.nan]
+        print(table)
