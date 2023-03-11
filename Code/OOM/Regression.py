@@ -1,6 +1,10 @@
 import numpy as np
 
 class Regression:
+    """
+    Base class for regression based models. Should not intended to be directly called.
+    Intended for subclassing.
+    """
     def __init__(self):
         self.coefficients = None
 
