@@ -15,47 +15,39 @@ from statsmodels.stats.api import linear_rainbow
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from scipy.stats import t
 class OLS(Regression):
-    def __init__(self):
+    def __init__(self, x: np.ndarray, y: np.ndarray):
         super().__init__()
-        self.x = None
-        self.y = None
-        self.n_samples = None
-        self.n_features = None
+        self.x = x
+        self.y = y
         self.coefficients = None
         self.residuals = None
         self.rsquared = None
 
-    def fit(self, x: np.ndarray, y: np.ndarray) -> None:
-        """Fit the regression model to the input data.
+        if isinstance(self.x, pl.DataFrame):
+            self.x = self.x.to_numpy()
 
-        Parameters:
-        X (numpy.ndarray): Input data of shape (n_samples, n_features).
-        y (numpy.ndarray): Target variable of shape (n_samples,).
+        if isinstance(y, pl.DataFrame):
+            self.y = self.y.to_numpy()
+
+        if not isinstance(self.x, np.ndarray):
+            raise TypeError("Input data X must be a numpy.ndarray")
+
+
+    def fit(self) -> None:
+        """Fit the regression model to the input data.
 
         Returns:
         None
         """
-        if isinstance(x, pl.DataFrame):
-            x = x.to_numpy()
-        if isinstance(y, pl.DataFrame):
-            y = y.to_numpy()
-
-        if not isinstance(x, np.ndarray):
-            raise TypeError("Input data X must be a numpy.ndarray")
-        if not isinstance(y, np.ndarray):
-            raise TypeError("Target variable y must be a numpy.ndarray")
-        x = np.insert(x, 0, 1, axis=1)  # Add bias term
-
-        self.x = x
-        self.y = y
+        self.x = np.insert(self.x, 0, 1, axis=1)  # Add bias term
         self.n_samples, self.n_features = self.x.shape
-
         self.coefficients = np.linalg.inv(self.x.T.dot(self.x)).dot(self.x.T).dot(self.y)
         self.y_pred = self.x.dot(self.coefficients)
         self.residuals = self.y - self.y_pred
         self.ss_total = np.sum((self.y - np.mean(self.y)) ** 2)
         self.ss_reg = np.sum((self.y_pred - np.mean(self.y)) ** 2)
         self.rsquared = self.ss_reg / self.ss_total
+
 
     def normality(self) -> None:
         """Plot a histogram of the residuals to test for normality."""
