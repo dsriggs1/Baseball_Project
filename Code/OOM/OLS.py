@@ -169,11 +169,11 @@ class OLS(Regression):
         else:
             print('Residuals are not linear (reject H0)')
 
-
     def summary(self):
         """Print summary statistics of the linear regression model."""
         if self.coefficients is None:
             raise ValueError("Model has not been fit yet.")
+
         table = pd.DataFrame(index=['Intercept'] + [f'Feature {i}' for i in range(1, self.n_features)],
                              columns=['Coefficient', 'Std. Error', 't-value', 'p-value'])
         table['Coefficient'] = self.coefficients
