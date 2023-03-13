@@ -16,23 +16,9 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 from scipy.stats import t
 class OLS(Regression):
     def __init__(self, x: np.ndarray, y: np.ndarray):
-        super().__init__()
-        self.x = x
-        self.y = y
-        self.coefficients = None
+        super().__init__(x, y)
         self.residuals = None
         self.rsquared = None
-
-        if isinstance(self.x, pl.DataFrame):
-            self.x = self.x.to_numpy()
-
-        if isinstance(y, pl.DataFrame):
-            self.y = self.y.to_numpy()
-
-        if not isinstance(self.x, np.ndarray):
-            raise TypeError("Input data X must be a numpy.ndarray")
-
-
     def fit(self) -> None:
         """Fit the regression model to the input data.
 
@@ -47,6 +33,7 @@ class OLS(Regression):
         self.ss_total = np.sum((self.y - np.mean(self.y)) ** 2)
         self.ss_reg = np.sum((self.y_pred - np.mean(self.y)) ** 2)
         self.rsquared = self.ss_reg / self.ss_total
+
 
 
     def normality(self) -> None:
