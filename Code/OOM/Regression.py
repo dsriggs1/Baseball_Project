@@ -42,10 +42,6 @@ class Regression:
     def RMSE(self) -> float:
         """Calculate the root mean squared error (RMSE) for the regression model.
 
-        Parameters:
-        X (numpy.ndarray): Input data of shape (n_samples, n_features).
-        y (numpy.ndarray): Target variable of shape (n_samples,).
-
         Returns:
         float: Root mean squared error (RMSE) of the predictions.
         """
@@ -55,10 +51,6 @@ class Regression:
 
     def MSE(self) -> float:
         """Calculate the mean squared error (MSE) for the regression model.
-
-        Parameters:
-        X (numpy.ndarray): Input data of shape (n_samples, n_features).
-        y (numpy.ndarray): Target variable of shape (n_samples,).
 
         Returns:
         float: Mean squared error (MSE) of the predictions.
@@ -70,13 +62,10 @@ class Regression:
     def MAE(self) -> float:
         """Calculate the mean absolute error (MAE) for the regression model.
 
-        Parameters:
-        X (numpy.ndarray): Input data of shape (n_samples, n_features).
-        y (numpy.ndarray): Target variable of shape (n_samples,).
-
         Returns:
         float: Mean absolute error (MAE) of the predictions.
         """
 
         y_pred = self.predict(self.x)
         return np.mean(np.abs(self.y - y_pred))
+
