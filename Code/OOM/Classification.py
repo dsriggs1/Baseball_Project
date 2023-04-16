@@ -59,9 +59,36 @@ class Classification:
         if X.shape[1] != self.coefficients.shape[0]:
             raise ValueError("X and coef must have compatible dimensions.")
 
-        y_pred = X.dot(self.coefficients)
+        self.y_pred = X.dot(self.coefficients)
+        self.y_pred = 1.0 / (1.0 + np.exp(-self.y_pred))
 
-        return y_pred
+        return self.y_pred
+
+    def predict_binary(self, X: np.ndarray, threshold: float = 0.5) -> np.ndarray:
+        """
+        Predict binary classification output based on a numpy array of independent variables,
+        a vector of coefficients, and a threshold.
+
+        Parameters:
+        X (numpy array): Numpy array of independent variables.
+        threshold (float): Threshold to convert probabilities to binary output. Default is 0.5.
+
+        Returns:
+        numpy array: Binary classification output (0 or 1).
+        """
+        if not isinstance(threshold, (float, int)):
+            raise TypeError("threshold must be a float or integer.")
+
+        if threshold < 0 or threshold > 1:
+            raise ValueError("threshold must be between 0 and 1.")
+
+        # Get the probability predictions
+        y_pred_proba = self.predict(X)
+
+        # Convert probabilities to binary classification
+        self.y_pred_binary = np.where(y_pred_proba >= threshold, 1, 0)
+
+        return self.y_pred_binary
 
     def conf_matrix(self) -> np.ndarray:
         """
@@ -73,7 +100,12 @@ class Classification:
         Returns:
         numpy array: The confusion matrix.
         """
-        return confusion_matrix(self.y_true, self.y_pred)
+
+        if self.y_pred_binary is None:
+            raise ValueError("Unable to create confusion matrix. 'y_pred_binary' is None. Please run the 'predict_binary' method first to generate predicted values before calling the 'conf_matrix' method.")
+
+
+        return confusion_matrix(self.y, self.y_pred_binary)
 
     def f_score(self, beta: float = 1.0) -> float:
         """
@@ -85,7 +117,7 @@ class Classification:
         Returns:
         float: The F-score.
         """
-        return f1_score(self.y_true, self.y_pred, beta=beta)
+        return f1_score(self.y, self.y_pred, beta=beta)
 
     def auc_roc(self) -> float:
         """
@@ -97,7 +129,7 @@ class Classification:
         Returns:
         float: The AUC-ROC score.
         """
-        return roc_auc_score(self.y_true, self.y_pred)
+        return roc_auc_score(self.y, self.y_pred)
 
     def log_loss(self) -> float:
         """
@@ -109,7 +141,7 @@ class Classification:
         Returns:
         float: The log loss.
         """
-        return log_loss(self.y_true, self.y_pred)
+        return log_loss(self.y, self.y_pred)
 
     def calibration(self) -> None:
         """
@@ -121,7 +153,7 @@ class Classification:
         Returns:
         None
         """
-        fraction_of_positives, mean_predicted_value = calibration_curve(self.y_true, self.y_pred, n_bins=10)
+        fraction_of_positives, mean_predicted_value = calibration_curve(self.y, self.y_pred, n_bins=10)
         plt.plot(mean_predicted_value, fraction_of_positives, 's-', label='Model')
         plt.plot([0, 1], [0, 1], '--', color='gray', label='Perfectly calibrated')
         plt.title('Calibration plot')
@@ -140,8 +172,8 @@ class Classification:
         Returns:
         float: Somers' D score.
         """
-        y_true, y_pred = pd.Series(self.y_true), pd.Series(self.y_pred)
-        n1 = (y_true == 1).sum()
-        n0 = (y_true == 0).sum()
-        D = ((y_pred.rank() - y_true.rank()) * (y_true - y_pred)).sum() / (n1 * n0)
+        y, y_pred = pd.Series(self.y), pd.Series(self.y_pred)
+        n1 = (y == 1).sum()
+        n0 = (y == 0).sum()
+        D = ((y_pred.rank() - y.rank()) * (y - y_pred)).sum() / (n1 * n0)
         return D
