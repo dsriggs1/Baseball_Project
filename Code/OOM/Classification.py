@@ -107,17 +107,21 @@ class Classification:
 
         return confusion_matrix(self.y, self.y_pred_binary)
 
-    def f_score(self, beta: float = 1.0) -> float:
+    def f_score(self, labels=None, pos_label=1, average='binary', sample_weight=None, zero_division='warn') -> float:
         """
         Calculate the F-score.
 
         Parameters:
-        beta (float): The weight of precision in the calculation (default=1.0).
+        labels (list, optional): The set of labels to include when calculating the F-score. Default is None.
+        pos_label (int or str, optional): The class to report if the average is set to 'binary'. Default is 1.
+        average (str, optional): The method to compute the F-score. It can be one of {'micro', 'macro', 'weighted', 'binary', 'samples', None}. Default is 'binary'.
+        sample_weight (array-like, optional): Sample weights. Default is None.
+        zero_division (str or float, optional): The value to return when there is a zero division, either due to 0 true positive predictions or 0 true positive and false negative predictions. It can be one of {'warn', 0, 1}. Default is 'warn'.
 
         Returns:
         float: The F-score.
         """
-        return f1_score(self.y, self.y_pred, beta=beta)
+        return f1_score(self.y, self.y_pred_binary, labels=labels, pos_label=pos_label, average=average, sample_weight=sample_weight, zero_division=zero_division)
 
     def auc_roc(self) -> float:
         """
