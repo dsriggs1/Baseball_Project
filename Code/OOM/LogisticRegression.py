@@ -1,22 +1,25 @@
-# Import the Classification class
-from Classification import Classification
-from GLM import GLM
+from Code.OOM.Classification import Classification
+from sklearn.linear_model import LogisticRegression as LR
+import polars as pl
+import numpy as np
+class LogisticRegression(Classification):
+    """Custom implementation of logistic regression using scikit-learn's
+    LogisticRegression class designed to be able to handle polars dataframes as input
+    """
 
-
-class LogisticRegression(GLM, Classification):
-    def __init__(self):
-        super().__init__()
-        # Initialize the class
-        pass
+    def __init__(self, x: np.ndarray, y: np.ndarray, C=1.0, penalty='l2', solver='lbfgs', max_iter=100):
+        super().__init__(x, y)
+        """Initialize logistic regression model with hyperparameters"""
+        self.model = LR(C=C, penalty=penalty, solver=solver, max_iter=max_iter)
+        self.coefficients = None
 
     def fit(self):
-        # Method for fitting the model
-        pass
+        """Fit logistic regression model to the input data"""
 
-    def predict(self):
-        # Method for making predictions
-        pass
+        self.model.fit(self.x, self.y)
+        self.coefficients = self.model.coef_
 
+        return self.model
     def LASSO(self):
         # Method for LASSO regularization
         pass
