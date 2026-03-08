@@ -1,12 +1,8 @@
+-- BATCHED VERSION: Processes data year-by-year to avoid timeouts
+-- This script should be run with @process_year variable set
+-- Usage: Called by Python script run_batched_processing.py
+
 #Batter Points
-
-SELECT '###################################' AS '';
-SELECT '# DATA PROCESSING SCRIPT STARTED  #' AS '';
-SELECT '###################################' AS '';
-SELECT NOW() AS 'Script Start Time';
-SELECT 'Expected total runtime: 30-55 minutes' AS '';
-SELECT '' AS '';
-
 SET @single = 3;
 SET @double=5;
 SET @triple=8;
@@ -18,24 +14,38 @@ SET @hbp=2   ;
 SET @sb=5    ;
 
 #Pitcher Points
-SET @ip=2.25; #innings pitched
-SET @so=2; #strikeout
+SET @ip=2.25;
+SET @so=2;
 SET @win=4;
-SET @era=-2; #earned run allowed
-SET @ha=-0.6; #hit against (allowed a hit)
+SET @era=-2;
+SET @ha=-0.6;
 SET @walk=-0.6;
-SET @hb=-0.6; #hit batter
-SET @cg=2.5; #complete game
-SET @cgs=2.5; #complete game shutout
-SET @nh=5; #no hitter
+SET @hb=-0.6;
+SET @cg=2.5;
+SET @cgs=2.5;
+SET @nh=5;
 
-SELECT '========================================' AS '';
-SELECT 'Starting at_bat_level table creation' AS '';
-SELECT NOW() AS 'Start Time';
-SELECT '========================================' AS '';
+SELECT '###################################' AS '';
+SELECT CONCAT('# PROCESSING YEAR: ', @process_year, ' #') AS '';
+SELECT '###################################' AS '';
+SELECT NOW() AS 'Batch Start Time';
+SELECT '' AS '';
 
-DROP TABLE IF EXISTS retrosheet.at_bat_level;
-CREATE TABLE retrosheet.at_bat_level (
+-- ========================================
+-- CREATE TABLES (drop on first run only)
+-- ========================================
+
+-- Drop tables if this is the first year being processed (@drop_tables = 1)
+SET @drop_at_bat_level = IF(@drop_tables = 1,
+    'DROP TABLE IF EXISTS retrosheet.at_bat_level',
+    'SELECT "Preserving existing at_bat_level table" AS ""');
+PREPARE stmt FROM @drop_at_bat_level;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SELECT 'Checking/Creating at_bat_level table structure...' AS '';
+
+CREATE TABLE IF NOT EXISTS retrosheet.at_bat_level (
 	seq_events INT,
 	YEAR_ID INT,
 	GAME_ID VARCHAR(12),
@@ -185,10 +195,15 @@ PARTITION BY RANGE (YEAR_ID) (
 	PARTITION p_future VALUES LESS THAN MAXVALUE
 );
 
-SELECT 'at_bat_level table structure created' AS '';
-SELECT NOW() AS 'Time';
-SELECT 'Starting INSERT into at_bat_level (this will take 25-45 minutes)...' AS '';
+SELECT '========================================' AS '';
+SELECT CONCAT('Inserting at_bat_level for year ', @process_year) AS '';
+SELECT NOW() AS 'Start Time';
+SELECT '========================================' AS '';
 
+-- Delete existing data for this year (in case of re-run)
+DELETE FROM retrosheet.at_bat_level WHERE YEAR_ID = @process_year;
+
+-- Insert data for the specified year
 INSERT INTO retrosheet.at_bat_level
 	SELECT seq_events,
 	       E.YEAR_ID,
@@ -253,17 +268,13 @@ INSERT INTO retrosheet.at_bat_level
 		SUM(PA_BALL_CT) OVER (PARTITION BY bat_id, E.YEAR_ID ORDER BY E.GAME_ID, INN_CT) AS season_balls,
 		SUM(PA_SWINGMISS_STRIKE_CT) OVER (PARTITION BY bat_id, E.YEAR_ID ORDER BY E.GAME_ID, INN_CT) AS season_swing_strikes,
 
-
-	       -- Add the case expression for hit_fl
 	       CASE WHEN EVENT_CD IN ("20", "21", "22", "23") THEN 1 ELSE 0 END AS hit_fl,
-	       -- Add the case expression for pitchingpoints
 	       CASE
 		 WHEN EVENT_CD = "3" THEN 2
-		 WHEN EVENT_CD IN ("20", "21", "22", "23") THEN -0.6 #hit_fl logic
+		 WHEN EVENT_CD IN ("20", "21", "22", "23") THEN -0.6
 		 WHEN EVENT_CD IN ("14", "16") THEN -0.6
 		 ELSE 0
 	       END AS pitching_points,
-	       -- Add the case expression for fantasypoints
 		      CASE
 		 WHEN EVENT_CD = "23" THEN @hr
 		 WHEN EVENT_CD = "20" THEN @single + RBI_CT * @rbi
@@ -292,23 +303,33 @@ INSERT INTO retrosheet.at_bat_level
 		 park_id,
 		 DAYNIGHT_PARK_CD
 	  FROM retrosheet.games
+	  WHERE year_id = @process_year
 	) G
 	ON E.GAME_ID = G.GAME_ID
+	WHERE E.YEAR_ID = @process_year
 ;
 
 SELECT '========================================' AS '';
-SELECT 'at_bat_level INSERT completed' AS '';
+SELECT CONCAT('Year ', @process_year, ' at_bat_level completed') AS '';
 SELECT NOW() AS 'Completion Time';
-SELECT CONCAT('Rows inserted: ', COUNT(*)) AS 'Row Count' FROM retrosheet.at_bat_level;
+SELECT CONCAT('Rows inserted: ', ROW_COUNT()) AS '';
 SELECT '========================================' AS '';
 
-SELECT '========================================' AS '';
-SELECT 'Starting game_matchup_level table creation' AS '';
-SELECT NOW() AS 'Start Time';
-SELECT '========================================' AS '';
+-- ========================================
+-- game_matchup_level table
+-- ========================================
 
-DROP TABLE IF EXISTS retrosheet.game_matchup_level;
-CREATE TABLE retrosheet.game_matchup_level (
+-- Drop table if this is the first year being processed
+SET @drop_game_matchup = IF(@drop_tables = 1,
+    'DROP TABLE IF EXISTS retrosheet.game_matchup_level',
+    'SELECT "Preserving existing game_matchup_level table" AS ""');
+PREPARE stmt FROM @drop_game_matchup;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SELECT 'Checking/Creating game_matchup_level table structure...' AS '';
+
+CREATE TABLE IF NOT EXISTS retrosheet.game_matchup_level (
 	YEAR_ID INT,
 	GAME_ID VARCHAR(12),
 	GAME_DATE DATE,
@@ -424,9 +445,13 @@ PARTITION BY RANGE (YEAR_ID) (
 	PARTITION p_future VALUES LESS THAN MAXVALUE
 );
 
-SELECT 'game_matchup_level table structure created' AS '';
-SELECT NOW() AS 'Time';
-SELECT 'Starting INSERT into game_matchup_level...' AS '';
+SELECT '========================================' AS '';
+SELECT CONCAT('Inserting game_matchup_level for year ', @process_year) AS '';
+SELECT NOW() AS 'Start Time';
+SELECT '========================================' AS '';
+
+-- Delete existing data for this year
+DELETE FROM retrosheet.game_matchup_level WHERE YEAR_ID = @process_year;
 
 INSERT INTO retrosheet.game_matchup_level
 SELECT	YEAR_ID,
@@ -435,7 +460,6 @@ SELECT	YEAR_ID,
 	       BAT_HAND_CD,
 	       PIT_HAND_CD,
 	       bat_id,
-	       #PIT_ID,
 	       MAX(BAT_HOME_ID             ) AS BAT_HOME_ID,
 	       SUM(RBI_CT                  ) AS RBI_CT,
 	       MAX(BAT_LINEUP_ID           ) AS  BAT_LINEUP_ID,
@@ -465,22 +489,31 @@ SELECT	YEAR_ID,
 	       MAX( batting_points          ) AS  batting_points
 
 	FROM retrosheet.at_bat_level
-	GROUP BY YEAR_ID, GAME_ID, GAME_DATE, BAT_HAND_CD, PIT_HAND_CD, bat_id#, PIT_ID
+	WHERE YEAR_ID = @process_year
+	GROUP BY YEAR_ID, GAME_ID, GAME_DATE, BAT_HAND_CD, PIT_HAND_CD, bat_id
 	;
 
 SELECT '========================================' AS '';
-SELECT 'game_matchup_level INSERT completed' AS '';
+SELECT CONCAT('Year ', @process_year, ' game_matchup_level completed') AS '';
 SELECT NOW() AS 'Completion Time';
-SELECT CONCAT('Rows inserted: ', COUNT(*)) AS 'Row Count' FROM retrosheet.game_matchup_level;
+SELECT CONCAT('Rows inserted: ', ROW_COUNT()) AS '';
 SELECT '========================================' AS '';
 
-SELECT '========================================' AS '';
-SELECT 'Starting stolen_bases table creation' AS '';
-SELECT NOW() AS 'Start Time';
-SELECT '========================================' AS '';
+-- ========================================
+-- stolen_bases table
+-- ========================================
 
-DROP TABLE IF EXISTS retrosheet.stolen_bases;
-CREATE TABLE retrosheet.stolen_bases (
+-- Drop table if this is the first year being processed
+SET @drop_stolen_bases = IF(@drop_tables = 1,
+    'DROP TABLE IF EXISTS retrosheet.stolen_bases',
+    'SELECT "Preserving existing stolen_bases table" AS ""');
+PREPARE stmt FROM @drop_stolen_bases;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SELECT 'Checking/Creating stolen_bases table structure...' AS '';
+
+CREATE TABLE IF NOT EXISTS retrosheet.stolen_bases (
 	GAME_ID VARCHAR(12),
 	GAME_DATE DATE,
 	BASE_STL_ID VARCHAR(8),
@@ -492,9 +525,14 @@ CREATE TABLE retrosheet.stolen_bases (
 	INDEX idx_game (GAME_ID)
 );
 
-SELECT 'stolen_bases table structure created' AS '';
-SELECT NOW() AS 'Time';
-SELECT 'Starting INSERT into stolen_bases...' AS '';
+SELECT '========================================' AS '';
+SELECT CONCAT('Inserting stolen_bases for year ', @process_year) AS '';
+SELECT NOW() AS 'Start Time';
+SELECT '========================================' AS '';
+
+-- Delete existing data for this year
+DELETE FROM retrosheet.stolen_bases
+WHERE YEAR(GAME_DATE) = @process_year;
 
 INSERT INTO retrosheet.stolen_bases
 	SELECT GAME_ID
@@ -525,7 +563,7 @@ INSERT INTO retrosheet.stolen_bases
 		, 3 AS STOLEN_BASE_POINTS
 		, 1 AS STOLEN_BASE_FL
 		FROM retrosheet.events
-		WHERE event_cd='4'
+		WHERE event_cd='4' AND YEAR_ID = @process_year
 		UNION
 		SELECT GAME_ID
 		, STR_TO_DATE(SUBSTRING(GAME_ID, 4, 8), '%Y%m%d') AS GAME_DATE
@@ -548,20 +586,20 @@ INSERT INTO retrosheet.stolen_bases
 		, 3 AS STOLEN_BASE_POINTS
 		, 1 AS STOLEN_BASE_FL
 		FROM retrosheet.events
-		WHERE event_cd='4'
+		WHERE event_cd='4' AND YEAR_ID = @process_year
 	) AS sb
 	GROUP BY GAME_ID, GAME_DATE, BASE_STL_ID, STOLEN_BASE_FL, PIT_HAND_CD
 	;
 
 SELECT '========================================' AS '';
-SELECT 'stolen_bases INSERT completed' AS '';
+SELECT CONCAT('Year ', @process_year, ' stolen_bases completed') AS '';
 SELECT NOW() AS 'Completion Time';
-SELECT CONCAT('Rows inserted: ', COUNT(*)) AS 'Row Count' FROM retrosheet.stolen_bases;
+SELECT CONCAT('Rows inserted: ', ROW_COUNT()) AS '';
 SELECT '========================================' AS '';
 
 SELECT '' AS '';
 SELECT '###################################' AS '';
-SELECT '# ALL TABLES CREATED SUCCESSFULLY #' AS '';
+SELECT CONCAT('# YEAR ', @process_year, ' COMPLETED #') AS '';
 SELECT '###################################' AS '';
-SELECT NOW() AS 'Final Completion Time';
+SELECT NOW() AS 'Batch End Time';
 SELECT '' AS '';
