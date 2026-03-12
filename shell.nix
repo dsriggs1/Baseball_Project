@@ -1,5 +1,4 @@
-{ pkgs ? import <nixpkgs> {} }:
-
+{pkgs ? import <nixpkgs> {}}:
 pkgs.mkShell {
   buildInputs = with pkgs; [
     # Python and core packages from nixpkgs
@@ -30,6 +29,9 @@ pkgs.mkShell {
 
     # MySQL/MariaDB CLI tool
     mariadb
+    # Jupyter lab
+    python311Packages.jupyterlab
+    python311Packages.ipykernel
   ];
 
   shellHook = ''
@@ -44,8 +46,8 @@ pkgs.mkShell {
       echo "Creating virtual environment for additional packages..."
       python -m venv .venv
       source .venv/bin/activate
-      pip install --quiet pybaseball
-      echo "Virtual environment created with pybaseball"
+      pip install --quiet pybaseball ipykernel
+      echo "Virtual environment created with pybaseball and ipykernel"
       echo ""
     else
       source .venv/bin/activate
